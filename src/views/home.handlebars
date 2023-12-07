@@ -1,0 +1,51 @@
+<h1>Perfil usuario</h1>
+<button id="logoutButton">Cerrar Sesión</button>
+<div class="container">
+    <div class="infoProd">
+        <h1>Lista de Productos</h1>
+        <div class="detalleProd">
+            <div id="productsContainer">
+                <ul>
+                    {{#each products}}
+                    <li>
+                        <strong>{{this.description}}</strong><br>
+                        Price: ${{this.price}}<br>
+                        Stock: {{this.stock}}<br>
+                        Category: {{this.category}}<br>
+                        <button>Agregar</button>
+                    </li>
+                    {{/each}}
+                </ul>
+
+            </div>
+        </div>
+    </div>
+    <div class="formulario">
+        <h1>Comunícate con nosotros!</h1>
+        <form id="email-form">
+            <input type="hidden" id="productId" name="productId">
+            <div class="inputs">
+                <div>
+                    <input type="email" id="email" autocomplete="off" placeholder="Ingrese Correo" required>
+                </div>
+                <div>
+                    <textarea id="com" autocomplete="off" placeholder="Ingrese Comentario" required rows="4"
+                        cols="50"></textarea>
+                </div>
+            </div>
+            <div class="botones">
+                <button type="submit" id="btnCorreo">Enviar</button>
+            </div>
+        </form>
+    </div>
+
+
+<script>  
+    document.getElementById('logoutButton').addEventListener('click', cerrarSesion);
+    function cerrarSesion() {
+        localStorage.removeItem("token");
+        window.location.href = '/';
+    }
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/user.js"></script>
