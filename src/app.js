@@ -113,7 +113,7 @@ socketServer.on("connection", socket => {
         let result = await transporter.sendMail({
             from:'Chat Nodemailer',
             to:email,
-            subject:'Correo con Socket y Nodemailer',
+            subject:'Correo de Nodemailer',
             html:`
             <div>
                 <h1>${comment}</h1>
