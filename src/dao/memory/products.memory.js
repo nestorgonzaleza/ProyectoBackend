@@ -3,7 +3,11 @@ export default class Products {
         this.data = []
     }
 
-    get = () => {
-        return this.data
+    getProducts = async () => {
+        
+    }
+
+    createProduct = async (product) => {
+       
     }
 }

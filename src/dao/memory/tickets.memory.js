@@ -3,7 +3,11 @@ export default class Tickets {
         this.data = []
     }
 
-    get = () => {
-        return this.data
+    getTickets = async () => {
+        
+    }
+
+    createTicket = async (ticket) => {
+    
     }
 }

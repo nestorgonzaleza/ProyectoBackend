@@ -3,7 +3,23 @@ export default class Carts {
         this.data = []
     }
 
-    get = () => {
-        return this.data
+    getCarts = async () => {
+        
+    }
+
+    getAmount = async ({productos}) => {
+       
+    }
+
+    validateCart = async (id_cart) => {
+        
+    }
+
+    validateStock = async ({productos}) => {
+       
+    }
+
+    createCart = async (cart) => {
+      
     }
 }

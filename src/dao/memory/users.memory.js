@@ -3,7 +3,11 @@ export default class Users {
         this.data = []
     }
 
-    get = () => {
-        return this.data
+    getUsers = async () => {
+        
+    }
+
+    createUser = async (user) => {
+       
     }
 }
