@@ -37,12 +37,15 @@ export const transporter = nodemailer.createTransport({
 })
 
 export const generateProducts=()=>{
+    const stock = parseInt(faker.commerce.price({ min: 0, max: 20 })) //no habia random de stock, pero puede adaptarse método .price
+    const availability = stock === 0 ? "no_stock_available" : "available_stock";
+
     return{
         description: faker.commerce.productDescription(),
         price: faker.commerce.price({ min: 3000, max: 18000 }),
-        stock: faker.commerce.price({ min: 1, max: 20 }), //no habia random de stock, pero puede adaptarse método .price
+        stock: stock,
         category: faker.commerce.department(), //For a department in a shop or product category, use department()
-        availability: "available_stock"
+        availability: availability 
         // title: faker.commerce.productName(),
     }
 }
