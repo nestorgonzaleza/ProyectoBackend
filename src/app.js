@@ -15,11 +15,15 @@ import { generateProducts } from './utils.js'
 import UserDTO from './dao/DTOs/users.dto.js'
 import { engine } from "express-handlebars"
 import {Server} from "socket.io"
+//importación rutas
 import cartsRouter from './routes/carts.router.js'
 import productsRouter from './routes/products.router.js'
 import usersRouter from './routes/users.router.js'
 import ticketsRouter from './routes/tickets.router.js'
-
+//importaci+on errors
+import CustomError from './services/errors/CustomError.js'
+import EErrors from './services/errors/enums.js'
+import { generateUserErrorInfo } from './services/errors/info.js'
 
 
 const app = express()
@@ -158,8 +162,18 @@ app.post("/login", async (req, res) => {
   });
 
 app.post("/api/register", async(req,res)=>{
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     const {first_name, last_name, email,age, password, role} = req.body
+    if(!first_name || typeof first_name !== 'string' || !last_name || typeof last_name !== 'string'|| !email || !emailRegex.test(email) ||!age || !Number.isInteger(age)){
+        CustomError.createError({
+            name:"Error en la creación de usuario",
+            cause: generateUserErrorInfo({first_name, last_name, age, email}),
+            message: "Error al intentar crear un nuevo usuario",
+            code: EErrors.INVALID_TYPES_ERROR
+        })
+    }
+
     const emailToFind = email
     const ecorreo = await users.findEmail({ email: emailToFind })
 

@@ -15,8 +15,18 @@ router.get("/", async (req, res) => {
 })
 
 router.post("/", async (req, res) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     let { first_name, last_name, email, age, password, role } = req.body
+    
+    if(!first_name || typeof first_name !== 'string' || !last_name || typeof last_name !== 'string'|| !email || !emailRegex.test(email) ||!age || !Number.isInteger(age)){
+        CustomError.createError({
+            name:"Error en la creación de usuario",
+            cause: generateUserErrorInfo({first_name, last_name, age, email}),
+            message: "Error al intentar crear un nuevo usuario",
+            code: EErrors.INVALID_TYPES_ERROR
+        })
+    }
 
     let userCreate = new UserDTO({ first_name, last_name, email, age, password, role })
 
