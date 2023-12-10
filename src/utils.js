@@ -3,6 +3,7 @@ import { fileURLToPath } from "url"
 import passport from "passport"
 import nodemailer from 'nodemailer'
 import config from "./config/config.js"
+import { faker } from "@faker-js/faker"
 
 export const passportCall = (strategy) => {
     
@@ -34,6 +35,17 @@ export const transporter = nodemailer.createTransport({
         pass: config.admin_mail_pass
     }
 })
+
+export const generateProducts=()=>{
+    return{
+        description: faker.commerce.productDescription(),
+        price: faker.commerce.price({ min: 3000, max: 18000 }),
+        stock: faker.commerce.price({ min: 1, max: 20 }), //no habia random de stock, pero puede adaptarse método .price
+        category: faker.commerce.department(), //For a department in a shop or product category, use department()
+        availability: "available_stock"
+        // title: faker.commerce.productName(),
+    }
+}
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

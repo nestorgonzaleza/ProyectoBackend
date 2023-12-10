@@ -11,6 +11,7 @@ import __dirname, { authorization, passportCall, transporter } from "./utils.js"
 import initializePassport from "./config/passport.js"
 import * as path from "path"
 import {generateAndSetToken} from "./jwt/jwtoken.js"
+import { generateProducts } from './utils.js'
 import UserDTO from './dao/DTOs/users.dto.js'
 import { engine } from "express-handlebars"
 import {Server} from "socket.io"
@@ -18,6 +19,8 @@ import cartsRouter from './routes/carts.router.js'
 import productsRouter from './routes/products.router.js'
 import usersRouter from './routes/users.router.js'
 import ticketsRouter from './routes/tickets.router.js'
+
+
 
 const app = express()
 const port = 8080
@@ -78,7 +81,15 @@ app.use("/api/products", productsRouter)
 app.use("/api/users", usersRouter)
 app.use("/api/tickets", ticketsRouter)
 
-
+//Endpoint Mocking de productos
+app.get("/mockingproducts",(req,res)=>{
+    let productsMocking = []
+    for (let i = 0; i < 100; i++){
+        productsMocking.push(generateProducts())
+    }
+    
+    res.send({status: "succes", payload: productsMocking})
+})
 
 
 //websocket
