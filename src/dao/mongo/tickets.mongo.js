@@ -1,5 +1,5 @@
 import ticketsModel from './models/tickets.model.js'
-
+import logger from '../../logger.js'
 export default class Tickets {
     constructor() {
 
@@ -12,11 +12,13 @@ export default class Tickets {
     addTicket = async (ticket) => {
         try {
             let result = await ticketsModel.create(ticket);
-            console.log("Ticket creado con éxito!")
+            logger.info("Ticket creado con éxito!")
+            // console.log("Ticket creado con éxito!")
             return result
 
         } catch (error) {
-            console.error("No se pudo crear el ticket:", error);
+            logger.error("No se pudo crear el ticket:", error);
+            // console.error("No se pudo crear el ticket:", error);
             return "Error en creación de ticket";
         }
     }

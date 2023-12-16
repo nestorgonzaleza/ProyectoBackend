@@ -20,10 +20,12 @@ import cartsRouter from './routes/carts.router.js'
 import productsRouter from './routes/products.router.js'
 import usersRouter from './routes/users.router.js'
 import ticketsRouter from './routes/tickets.router.js'
-//importaci+on errors
+//importacion errors
 import CustomError from './services/errors/CustomError.js'
 import EErrors from './services/errors/enums.js'
 import { generateUserErrorInfo } from './services/errors/info.js'
+//logger
+import loggerMiddleware from './middlewares/logger/loggerMiddleware.js'
 
 
 const app = express()
@@ -71,7 +73,7 @@ app.set("views", path.resolve(__dirname + "/views"))
 app.use(cookieParser());
 initializePassport();
 app.use(passport.initialize());
-
+app.use(loggerMiddleware)
 
 
 const serverIo = app.listen(port, ()=>{
@@ -91,7 +93,7 @@ app.get("/mockingproducts",(req,res)=>{
     for (let i = 0; i < 100; i++){
         productsMocking.push(generateProducts())
     }
-    
+    req.logger.warn("Productos generados, recuerde ingresarlos usando POSTMAN o Thunder");
     res.send({status: "succes", payload: productsMocking})
 })
 
@@ -148,12 +150,15 @@ socketServer.on("connection", socket => {
 
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log(email)
-    console.log(password)
+    // console.log(email)
+    req.logger.info(email);
+    // console.log(password)
+    req.logger.info(password);
     const emailToFind = email;
     const user = await users.findEmail({ email: emailToFind });
     if (!user || user.password !== password) {
-      return res.status(401).json({ message: "Error de autenticación" });
+        req.logger.error("Error de autenticación");
+        return res.status(401).json({ message: "Error de autenticación" });
     }
     const token = generateAndSetToken(res, email, password);
     const userDTO = new UserDTO(user);
@@ -165,7 +170,8 @@ app.post("/api/register", async(req,res)=>{
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     const {first_name, last_name, email,age, password, role} = req.body
-    if(!first_name || typeof first_name !== 'string' || !last_name || typeof last_name !== 'string'|| !email || !emailRegex.test(email) ||!age || !Number.isInteger(age)){
+    if(!first_name || typeof first_name !== 'string' || !last_name || typeof last_name !== 'string'|| !email || !emailRegex.test(email) ||!age ){
+        req.logger.error("Error al crear el usuario");
         CustomError.createError({
             name:"Error en la creación de usuario",
             cause: generateUserErrorInfo({first_name, last_name, age, email}),
@@ -178,6 +184,7 @@ app.post("/api/register", async(req,res)=>{
     const ecorreo = await users.findEmail({ email: emailToFind })
 
     if(ecorreo) return res.status(400).send({status:"error", error: "Este correo ya fue registrado"})
+    req.logger.info("Parámetros de usuario correctos");
     const newUser = {
         first_name,
         last_name,
@@ -213,4 +220,18 @@ app.get('/admin',passportCall('jwt'), authorization('user'),(req,res) =>{
         const prodAll = await products.get();
         res.render('admin', { products: prodAll });
     });
+})
+
+
+//Test de Logger
+
+app.get("/loggerTest", (req,res)=>{
+    req.logger.error("Mensaje de error");
+    req.logger.warn("Mensaje de warn");
+    req.logger.info("Mensaje de info");
+    req.logger.http("Mensaje de http");
+    req.logger.verbose("Mensaje de verbose");
+    req.logger.debug("Mensaje de debug");
+    req.logger.silly("Mensaje de silly");
+    res.send("Logs realizados")
 })

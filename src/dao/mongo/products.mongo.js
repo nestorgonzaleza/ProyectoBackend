@@ -1,3 +1,4 @@
+import logger from '../../logger.js'
 import productsModel from './models/products.model.js'
 import mongoose from 'mongoose'
 
@@ -15,11 +16,13 @@ export default class Products {
         try
         {
             let result = await productsModel.create(productInfo);
-            console.log("Producto creado con éxito")
+            logger.info("Producto creado con éxito")
+            // console.log("Producto creado con éxito")
             return result
 
         }catch(error){
-            console.error('No se logró crear el producto:', error);
+            logger.error('No se logró crear el producto:', error);
+            // console.error('No se logró crear el producto:', error);
             return 'No se logró crear el producto';
         }      
     }
@@ -30,10 +33,12 @@ export default class Products {
                 return 'No existe ID válido para el producto';
             }
             let result = await productsModel.updateOne({ _id: new mongoose.Types.ObjectId(productId) }, { $set: productInfo });
-            console.log("Producto actualizado ", result)
+            // console.log("Producto actualizado ", result)
+            logger.warn("Producto actualizado ", result)
 
         } catch (error) {
-            console.error('Error al actualizar producto:', error);
+            logger.error('Error al actualizar producto:', error);
+            // console.error('Error al actualizar producto:', error);
             return 'Error al actualizar producto';
         }
     }
@@ -53,7 +58,8 @@ export default class Products {
                 return 'No existe ID válido para el producto';
             }
         } catch (error) {
-            console.error('No se logró eliminar el producto:', error);
+            logger.error('No se logró eliminar el producto:', error);
+            // console.error('No se logró eliminar el producto:', error);
             return 'No se logró eliminar el producto';
         }
     };
