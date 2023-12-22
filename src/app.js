@@ -15,6 +15,7 @@ import { generateProducts } from './utils.js'
 import UserDTO from './dao/DTOs/users.dto.js'
 import { engine } from "express-handlebars"
 import {Server} from "socket.io"
+
 //importación rutas
 import cartsRouter from './routes/carts.router.js'
 import productsRouter from './routes/products.router.js'
