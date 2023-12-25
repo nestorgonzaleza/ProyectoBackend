@@ -25,8 +25,8 @@ export default class Users {
             const user = await usersModel.findOne(findData)  
             return user
         }catch (error) {
-            logger.error('No se encontró el email:', error)
-            // console.error('No se encontró el email:', error);
+            // logger.error('No se encontró el email:', error)
+            console.error('No se encontró el email:', error);
             return 'Error encontrando email';
         }   
         
@@ -44,6 +44,9 @@ export default class Users {
             return 'No fue posible crear el usuario';
         }      
     }
+
+   
+
 
     findJWT = async (fJWT) => {
         try

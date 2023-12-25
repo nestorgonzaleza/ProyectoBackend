@@ -1,5 +1,6 @@
 import ticketsModel from './models/tickets.model.js'
 import logger from '../../logger.js'
+
 export default class Tickets {
     constructor() {
 

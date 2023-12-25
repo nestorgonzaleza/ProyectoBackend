@@ -15,4 +15,6 @@ export default class UserRepository {
         let result = await this.dao.addUser(userToCreate)
         return result
     }
+
+    
 }

@@ -14,8 +14,10 @@ import {generateAndSetToken} from "./jwt/jwtoken.js"
 import { generateProducts } from './utils.js'
 import UserDTO from './dao/DTOs/users.dto.js'
 import { engine } from "express-handlebars"
+import crypto from 'crypto'
 import {Server} from "socket.io"
-
+//model password reset
+import PasswordReset from './dao/mongo/models/passReset.model.js'
 //importación rutas
 import cartsRouter from './routes/carts.router.js'
 import productsRouter from './routes/products.router.js'
@@ -27,6 +29,7 @@ import EErrors from './services/errors/enums.js'
 import { generateUserErrorInfo } from './services/errors/info.js'
 //logger
 import loggerMiddleware from './middlewares/logger/loggerMiddleware.js'
+import usersModel from './dao/mongo/models/users.model.js'
 
 
 const app = express()
@@ -223,6 +226,110 @@ app.get('/admin',passportCall('jwt'), authorization('user'),(req,res) =>{
     });
 })
 
+//Restablecimiento de contraseña
+app.post("/forgot-password", async (req,res)=>{
+    const email = req.body.email;
+    console.log(email)
+
+    //verificar que el mail se encuentra en la base de datos
+    const emailToFind = email;
+    const user = await users.findEmail({ email: emailToFind });
+    
+
+    if (!user) {
+        console.log("Email no se encuentra registrado");
+        return res.status(401).json({ message: "Email no se encuentra registrado" });
+    }
+    //token único
+    const token = crypto.randomBytes(20).toString('hex'); 
+    //almacenar en mongoose
+    await PasswordReset.create({ email, token });
+
+    const resetLink = `http://localhost:8080/reset-password/${token}`;
+
+    const mailOptions = {
+    from: 'novositabisuteria@gmail.com',
+    to: email,
+    subject: 'Restablecer contraseña',
+    text: `Estimada/o,\n\nPara restablecer su password, haga clic en el siguiente enlace: ${resetLink}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return res.status(500).json({ message: 'Error al enviar el correo electrónico' });
+        }
+        console.log('Email enviado ');
+        res.send({ message: 'Se ha enviado un correo electrónico con instrucciones para restablecer la contraseña.' });
+    });
+
+})
+
+// formulario restablecimiento de contraseña
+app.get('/restablecer', (req, res) => {
+    res.sendFile('restablecer.html', { root: app.get('views') });
+});
+
+app.get('/reset-password/:token', async (req, res) => {
+    // Obtener el token de la URL enviada al correo
+    const  token  = req.params.token;
+    console.log(token)
+
+    try {
+        // Existe el token en mongoose?
+        const resetToken = await PasswordReset.findOne({ token }).exec();
+
+        if (!resetToken) {
+            // Token inválido después de la hora
+            return res.redirect('/reset-password-expired');
+        }
+
+        // Renderizar la vista con el formulario de restablecimiento
+        res.render('reset-password-form', { token });
+
+    } catch (err) {
+        return res.status(500).send('Error interno del servidor');
+    }
+});
+
+// procesar restablecimiento contraseña
+app.post('/reset-password/:token', async (req, res) => {
+    const {token} = req.body
+    console.log(token)
+    // const token  = req.params.token;
+    const { newPassword } = req.body;
+    console.log(req.params)
+    console.log(req.body)
+    console.log(newPassword)
+    // Verificar si el token existe en la base de datos
+    const resetToken = await PasswordReset.findOne({ token });
+  
+    if (!resetToken) {
+      return res.status(404).json({ message: 'El token cumplió su tiempo de expiración' });
+    }
+
+      // Actualizar la contraseña del usuario en la base de datos
+
+    const updatedUser = await usersModel.findOneAndUpdate(
+    { email: resetToken.email },
+    { password: newPassword },
+    { new: true }
+    );  
+    
+    if (!updatedUser) {
+        return res.status(500).json({ message: 'Error al actualizar la contraseña del usuario' });
+    }
+    //eliminar token de la BD
+    await PasswordReset.deleteOne({ token: resetToken.token });
+    //reenviar a la pantalla de exito
+    // res.render('reset-password-success');
+    // res.sendFile('reset-password-success.html', { root: app.get('views') });
+    res.redirect('/reset-password-success');
+});
+
+app.get('/reset-password-success', (req, res) => {
+    res.sendFile('reset-password-success.html', { root: app.get('views') });
+    
+});
 
 //Test de Logger
 
