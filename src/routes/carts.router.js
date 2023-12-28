@@ -1,9 +1,9 @@
 import { Router } from "express";
 import CartDTO from "../dao/DTOs/carts.dto.js";
 import Carts from "../dao/mongo/carts.mongo.js";
-import { ticketService, cartService } from "../repositories/pivot.js";
+import { ticketService, cartService, userService } from "../repositories/pivot.js";
 import TicketDTO from "../dao/DTOs/tickets.dto.js";
-
+import logger from "../logger.js";
 const router = Router()
 
 const cartMongo = new Carts()
@@ -18,12 +18,22 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
 
     let { products } = req.body
+    const correo = req.body.correo;
+    let roleUser = userService.getRoleUser(products.owner)
 
-    let cart = new CartDTO({ products })
-    console.log(cart)
+    if(roleUser == 'premium' && correo == products.owner)
+    {
+        console.log("No se puede agregar al carrito un producto que ya pertenece al usuario")
+    }else{
+        let cart = new CartDTO({ products })
+        let result = await cartService.createCart(cart)
+    }
 
-    let result = await cartService.createCart(cart)
-    console.log(result)
+    if(result){
+        req.logger.info('Se ha creado un carrito con éxito!');
+    }else{
+        req.logger.error("No fue posible crear el carrito");
+    }
 
 })
 
@@ -37,6 +47,7 @@ router.post("/:cid/buy", async (req, res) => {
         let cart = cartService.validateCart(id_cart)
 
         if (!cart) {
+            req.logger.error("No se encontró el ID para el carrito");
             return { error: "No se encontró el ID para el carrito" };
         }
         let validateStock = cartService.validateStock({productos})
@@ -52,6 +63,7 @@ router.post("/:cid/buy", async (req, res) => {
         }
         
     } catch (error) {
+        req.logger.error("Error al procesar el ticket:" + error.message);
         console.error("Error al procesar el ticket:", error);
         return res.status(500).json({ error: "Error interno al procesar" });
     }

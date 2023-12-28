@@ -5,14 +5,14 @@ export default class TicketRepository {
         this.dao = dao
     }
 
-    getTickets = async () => {
-        let result = await this.dao.get()
-        return result
-    }
-
     createTicket = async (ticket) => {
         let ticketToCreate = new TicketDTO(ticket)
         let result = await this.dao.addTicket(ticketToCreate)
         return result
     }
+    getTickets = async () => {
+        let result = await this.dao.get()
+        return result
+    }
+
 }

@@ -20,6 +20,22 @@ export default class Users {
         }       
     }
 
+    getUserById = async (id) => { 
+        try 
+        {
+          const user = await usersModel.findById(id).lean();    
+          if (!user) 
+          {
+            return 'No fue posible encontrar el usuario';
+          }   
+          return user;
+        } catch (error) {
+            // logger.error('No se encontró el id de usuario:', error)
+          console.error('No se encontró el usuario:', error);
+          return 'Error al obtener el usuario';
+        }
+      }
+
     findEmail = async (findData) => {
         try{
             const user = await usersModel.findOne(findData)  

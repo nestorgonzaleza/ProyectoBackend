@@ -1,9 +1,17 @@
+import passport from "passport"
+import bcrypt from 'bcrypt'
 import path from "path"
 import { fileURLToPath } from "url"
-import passport from "passport"
 import nodemailer from 'nodemailer'
 import config from "./config/config.js"
 import { faker } from "@faker-js/faker"
+
+export const createHash = async password => {
+    const sRounds = 10
+    return await bcrypt.hash(password, sRounds)
+}
+
+export const isValidPassword = (user,password) => bcrypt.compareSync(password, user.password)
 
 export const passportCall = (strategy) => {
     
@@ -49,6 +57,8 @@ export const generateProducts=()=>{
         // title: faker.commerce.productName(),
     }
 }
+
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

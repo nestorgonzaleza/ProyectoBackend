@@ -6,5 +6,6 @@ export default class ProductDTO {
         this.category = product.category
         this.availability = product.availability
         // this.image = product.image ******** a agregar con mejora del maquetado
+        this.owner = product.owner
     }
 }

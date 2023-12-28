@@ -12,6 +12,22 @@ export default class Products {
         return products
     }
 
+    getProductById = async (id) => { 
+        try 
+        {
+          const prod = await productsModel.findById(id).lean();    
+          if (!prod) 
+          {
+            return 'No se encontró el producto';
+          }   
+          return prod;
+        } catch (error) {
+          console.error('Error al buscar producto:', error);
+          logger.error('No se logró encontrar el producto:', error);
+          return 'Error al obtener el producto';
+        }
+      }
+
     addProduct = async (productInfo) => {
         try
         {
