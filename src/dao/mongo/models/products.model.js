@@ -7,7 +7,8 @@ const productsSchema = new mongoose.Schema({
     price: { type: Number},
     stock: { type: Number},
     category: { type: String, max: 50 }, 
-    availability: { type: String, enum: ['available_stock', 'no_stock_available'] } 
+    availability: { type: String, enum: ['available_stock', 'no_stock_available'] },
+    owner: { type: String, max: 50}
     // image: { type: String, max: 300}, ****** a agregar con la mejora del maquetado
 })
 

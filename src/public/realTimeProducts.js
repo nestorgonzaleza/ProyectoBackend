@@ -11,9 +11,9 @@ document.getElementById('prod-form').addEventListener('submit', (e) => {
     const description = descInput.value;
     descInput.value = '';
 
-    const imgInput = document.getElementById('img');
-    const image = imgInput.value;
-    imgInput.value = '';
+    // const imgInput = document.getElementById('img');
+    // const image = imgInput.value;
+    // imgInput.value = '';
 
     const priceInput = document.getElementById('price');
     const price = priceInput.value;
@@ -39,11 +39,12 @@ document.getElementById('prod-form').addEventListener('submit', (e) => {
     }else{
         const newProduct = {
             description: description,
-            image:image,
+            // image:image,
             price: price,
             stock: stock,
             category: category,
-            availability: available
+            availability: available,
+            owner: owner,
         }
     
         if (id === '') {
@@ -61,6 +62,18 @@ socket.on("success", (data) => {
         icon: 'success',
         title: data,
         text: `A continuación verás la lista actualizada`,
+        confirmButtonText: 'Aceptar', // Cambia el texto del botón Aceptar
+    }).then((result) => {
+        if (result.isConfirmed) {
+            location.reload(); // Recarga la página cuando se hace clic en Aceptar
+        }
+    });
+});
+
+socket.on("errorUserPremium", (data) => {
+    Swal.fire({
+        icon: 'error',
+        title: data,
         confirmButtonText: 'Aceptar', // Cambia el texto del botón Aceptar
     }).then((result) => {
         if (result.isConfirmed) {

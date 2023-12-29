@@ -1,4 +1,4 @@
-<h1>PERFIL PREMIUM</h1>
+<h1>Perfil Premium</h1>
 <div class="container">
     <button id="logoutButton">Cerrar Sesión</button>
     <div class="infoProd">
@@ -8,7 +8,7 @@
             <div id="productsContainer">
                 <ul>
                     {{#each products}}
-                    <li data-description="{{this.description}}" data-image="{{this.image}}" data-price="{{this.price}}" 
+                    <li data-description="{{this.description}}" {{!-- data-image="{{this.image}}" --}} data-price="{{this.price}}" 
                     data-stock="{{this.stock}}" data-category="{{this.category}}" data-available="{{this.availability}}"
                     data-owner="{{this.owner}}" data-id="{{this._id}}">
                         <strong>{{this.description}}</strong><br>
@@ -32,7 +32,7 @@
             <div class="inputs">
                 <div>
                     <input type="text" id="desc" autocomplete="off" placeholder="Ingrese Descripcion" required>
-                    <input type="text" id="img" autocomplete="off" placeholder="Ingrese Imagen" required>
+                    {{!-- <input type="text" id="img" autocomplete="off" placeholder="Ingrese Imagen" required> --}}
                     <input type="number" id="price" autocomplete="off" placeholder="Ingrese Precio" required>
                     <input type="text" id="owner" autocomplete="off" placeholder="Ingrese Owner(Email)" required>
                 </div>
@@ -40,8 +40,8 @@
                     <input type="number" id="stock" autocomplete="off" placeholder="Ingrese Stock" required>
                     <input type="text" id="cat" autocomplete="off" placeholder="Ingrese Categoria" required>
                     <select name="available" id="available">
-                        <option value="in_stock" selected="true">Con Stock</option>
-                        <option value="out_stock">Sin Stock</option>
+                        <option value="available_stock" selected="true">Con Stock</option>
+                        <option value="no_stock_available">Sin Stock</option>
                     </select>
                 </div>
             </div>
@@ -80,7 +80,7 @@
             if (clickedElement.tagName === "LI") {
                 // Información productos
                 const description = clickedElement.getAttribute("data-description");
-                const image = clickedElement.getAttribute("data-image");
+                //const image = clickedElement.getAttribute("data-image");
                 const price = clickedElement.getAttribute("data-price");
                 const stock = clickedElement.getAttribute("data-stock");
                 const category = clickedElement.getAttribute("data-category");
@@ -89,7 +89,7 @@
 
                 // Actualizar los campos del formulario con la información del producto
                 descInput.value = description;
-                imgInput.value = image;
+                //imgInput.value = image;
                 priceInput.value = price;
                 stockInput.value = stock;
                 catInput.value = category;
@@ -100,5 +100,7 @@
         });
     });
 </script>
+
 <script src="/socket.io/socket.io.js"></script>
 <script src="/realTimeProductsSuper.js"></script>
+

@@ -2,16 +2,16 @@ const socket = io()
 
 document.getElementById('resetForm').addEventListener('submit', async (e) => {
     e.preventDefault()
-    const password1 = document.querySelector("#pwd").value
-    const password2 = document.querySelector("#pwd2").value
+    const newPassword = document.querySelector("#pwd").value //** */
+    const newPasswordVerif = document.querySelector("#pwd2").value //** */
     const email = document.getElementById("emailPlaceholder").textContent;
-    if(password1 != password2)
+    if(newPassword != newPasswordVerif)
     {
         socket.emit("notMatchPass");
     }
     else
     {
-        socket.emit("validActualPass", {password1, password2, email});
+        socket.emit("validActualPass", {newPassword, newPasswordVerif, email});
     }
     
 })
@@ -19,7 +19,7 @@ socket.on("warning", (data) => {
     Swal.fire({
         icon: 'warning',
         title: data,
-        confirmButtonText: 'Aceptar', // Cambia el texto del botón Aceptar
+        confirmButtonText: 'Aceptar', 
     }).then((result) => {
         if (result.isConfirmed) {
             location.reload(); // Recarga la página cuando se hace clic en Aceptar

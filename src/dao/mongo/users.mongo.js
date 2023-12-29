@@ -75,4 +75,76 @@ export default class Users {
             return 'Error con el JWT';
         }      
     }
+
+    getUserRoleByEmail = async (email) => {
+        try {
+          // Buscar el usuario por correo electrónico en tu modelo de usuario
+          const user = await usersModel.findOne({ email });
+      
+          // Verificar si se encontró un usuario y si tiene un rol premium
+          if (user && user.role === 'premium') {
+            return 'premium'
+          } else {
+            return "usuario con otro rol"
+          }
+        } catch (error) {
+          console.error('Error al obtener el rol del usuario:', error);
+          return 'Error al obtener el rol del usuario';
+        }
+    };
+
+    updatePassword = async (email, newPassword) => {
+        try {
+            const updatedUser = await usersModel.findOneAndUpdate(
+                { email: email },
+                { $set: { password: newPassword } },
+                { new: true } 
+            );
+    
+            if (updatedUser) {
+                return updatedUser;
+            } else {
+                console.error('Usuario no encontrado');
+            }
+        } catch (error) {
+            console.error('Error al actualizar la contraseña:', error);
+            return 'Error al actualizar la contraseña';
+        }
+    };
+
+    getPasswordByEmail = async (email) => {
+        try {
+          const user = await usersModel.findOne({ email: email }).lean();
+      
+          if (user) {
+            const pass = user.password;
+            return pass; 
+          } else {
+            return null; 
+          }
+        } catch (error) {
+          console.error('Error al obtener el usuario:', error);
+          return 'Error al obtener el usuario';
+        }
+    };
+    
+    updateUserRoleById = async ({uid, role}) => {
+        try {
+          const updatedUser = await usersModel.findByIdAndUpdate(
+            uid,
+            { $set: { role: role } },
+            { new: true }
+          );
+      
+          if (updatedUser) {
+            return updatedUser;
+          } else {
+            console.error('Usuario no encontrado');
+            return null; // o lanza una excepción según tus necesidades
+          }
+        } catch (error) {
+          console.error('Error al actualizar el rol:', error);
+          return 'Error al actualizar el rol';
+        }
+      };
 }

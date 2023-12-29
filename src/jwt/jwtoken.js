@@ -13,11 +13,12 @@ export function generateAndSetTokenEmail(email) {
 
 export function getEmailTokenLogin(token) {
   try {
+    // console.log("el token que llego a la funcion getEmailTokenLogin es "+token)
     const decoded = jwt.verify(token, 'Secret-key');
     return decoded.email;
   } catch (error) {
     console.error('Error al decodificar el token:', error);
-    return null; // o lanza una excepción según tus necesidades
+    return null; 
   }
 }
 
@@ -27,7 +28,6 @@ export function getEmailToken(token) {
     const email = decoded.email;
     return email;
   } catch (error) {
-    // Manejar errores de decodificación o token no válido
     console.error('Error al decodificar el token:', error);
     return null;
   }
