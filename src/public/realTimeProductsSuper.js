@@ -38,36 +38,44 @@ document.getElementById('prod-form').addEventListener('submit', (e) => {
     ownerInput.value = '';
 
 
-    const eliminarProductoCheckbox = document.getElementById('eliminarProducto');
-    const eliminarProducto = eliminarProductoCheckbox.checked;
-
-    if (eliminarProducto) {
-        // Enviar mensaje si el checkbox está seleccionado
-        socket.emit("delProdPremium", { id: id, owner: owner, email: email });
-    }else{
-        const newProduct = {
-            description: description,
-            // image:image,
-            price: price,
-            stock: stock,
-            category: category,
-            availability: available,
-            owner: owner,
-        }
     
-        if (id === '') {
-
-            // Si el ID está vacío, es un nuevo producto (crear)
-            socket.emit("newProd", newProduct);
-
-        } else {
-            
-            // Si el ID tiene un valor, es un producto existente (actualizar)
-            socket.emit("updProd", { id: id, newProduct });
-
-        }
+    const newProduct = {
+        description: description,
+        // image:image,
+        price: price,
+        stock: stock,
+        category: category,
+        availability: available,
+        owner: owner,
     }
+    
+    if (id === '') {
+
+        // Si el ID está vacío, es un nuevo producto (crear)
+        socket.emit("newProd", newProduct);
+
+    } else {
+            
+        // Si el ID tiene un valor, es un producto existente (actualizar)
+        socket.emit("updProd", { id: id, newProduct });
+
+    }
+
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".eliminarBtn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const productId = this.closest("li").getAttribute("data-id");
+        const owner = this.closest("li").getAttribute("data-owner");
+        const email = document.getElementById("correoLogin").value;
+  
+        // Emitir evento al servidor para eliminar el producto
+        socket.emit("delProdPremium", { id: productId, owner: owner, email: email });
+      });
+    });
+  });
 
 socket.on("success", (data) => {
     Swal.fire({

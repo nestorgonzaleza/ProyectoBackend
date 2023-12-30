@@ -1,33 +1,15 @@
 <h1>Perfil Premium</h1>
 <div class="container">
+    Bienvenido! <span id="emailUsuario">{{email}}</span>
     <button id="logoutButton">Cerrar Sesión</button>
-    <div class="infoProd">
-        <h1>Lista de Productos con Handlebars</h1>
-        Bienvenido! <span id="emailUsuario">{{email}}</span>
-        <div class="detalleProd">
-            <div id="productsContainer">
-                <ul>
-                    {{#each products}}
-                    <li data-description="{{this.description}}" {{!-- data-image="{{this.image}}" --}} data-price="{{this.price}}" 
-                    data-stock="{{this.stock}}" data-category="{{this.category}}" data-available="{{this.availability}}"
-                    data-owner="{{this.owner}}" data-id="{{this._id}}">
-                        <strong>{{this.description}}</strong><br>
-                        Price: ${{this.price}}<br>
-                        Stock: {{this.stock}}<br>
-                        Category: {{this.category}}<br>
-                        Available: {{this.availability}}<br>
-                        Owner:{{this.owner}}<br>
-                        ID:{{this._id}}<br>
-                    </li>
-                    {{/each}}
-                </ul>
-            </div>
-        </div>
-    </div>
+
     <div class="formulario">
         <h1>Formulario de gestión de Productos</h1>
+        <h5>Si no ingresa ID, al presionar guardar se creará otro producto</h5>
+        <h5>Si ingresa ID, al presionar guardar, la información del formulario actualizará el producto con el ID correspondiente</h5>
+        <label>Para autocompletar actualizacion de producto haga clic en el texto del producto de la lista</label>
         <form id="prod-form">
-            <input type="hidden" id="productId" name="productId">
+            <input type="text" id="productId" name="productId" placeholder="ID producto">
             <input type="hidden" id="correoLogin" name="correoLogin" value="{{email}}">
             <div class="inputs">
                 <div>
@@ -45,16 +27,43 @@
                     </select>
                 </div>
             </div>
-            <label>Para gestionar haga clic en el producto</label>
+            
             <div class="botones">
                 <button type="submit" id="btnCrear">Guardar</button>
                 
-                <input type="checkbox" id="eliminarProducto" name="eliminarProducto">
-                Eliminar
+                
                 
             </div>
         </form>
     </div>
+
+
+    <div class="infoProd">
+        <h1>Listado de productos</h1>
+        
+        <div class="detalleProd">
+            <div id="productsContainer">
+                <ul>
+                    {{#each products}}
+                    <li data-description="{{this.description}}" {{!-- data-image="{{this.image}}" --}} data-price="{{this.price}}" 
+                    data-stock="{{this.stock}}" data-category="{{this.category}}" data-available="{{this.availability}}"
+                    data-owner="{{this.owner}}" data-id="{{this._id}}">
+                        <strong>{{this.description}}</strong><br>
+                        Price: ${{this.price}}<br>
+                        Stock: {{this.stock}}<br>
+                        Category: {{this.category}}<br>
+                        Available: {{this.availability}}<br>
+                        Owner:{{this.owner}}<br>
+                        ID:{{this._id}}<br>
+                        <button class="eliminarBtn">Eliminar</button> 
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    
 </div>
 <script>
     document.getElementById('logoutButton').addEventListener('click', cerrarSesion);
@@ -78,7 +87,7 @@
             // Verificar si el clic fue en un elemento de la lista
             const clickedElement = event.target;
             if (clickedElement.tagName === "LI") {
-                // Información productos
+                // Información productos existentes
                 const description = clickedElement.getAttribute("data-description");
                 //const image = clickedElement.getAttribute("data-image");
                 const price = clickedElement.getAttribute("data-price");
@@ -87,7 +96,7 @@
                 const owner = clickedElement.getAttribute("data-owner");
                 const productId = clickedElement.getAttribute("data-id");
 
-                // Actualizar los campos del formulario con la información del producto
+                // Autocompletar los campos del formulario con la información del producto
                 descInput.value = description;
                 //imgInput.value = image;
                 priceInput.value = price;
@@ -98,6 +107,10 @@
 
             }
         });
+
+        
+        
+
     });
 </script>
 

@@ -126,19 +126,19 @@ socketServer.on("connection", socket => {
         console.log("El valor del rol de usuario es: "+ validUserPremium)
         if(validUserPremium == 'premium'){
             products.addProduct(newProduct)
-            socketServer.emit("success", "Producto Agregado Correctamente");
+            socketServer.emit("success", "Nuevo producto agregado con éxito");
         }else{
-            socketServer.emit("errorUserPremium", "Producto no fue agregado porque owner no es usuario premium");
+            socketServer.emit("errorUserPremium", "Owner no es usuario premium");
         }
         
     });
     socket.on("updProd", ({id, newProduct}) => {
         products.updateProduct(id, newProduct)
-        socketServer.emit("success", "Producto Actualizado Correctamente");
+        socketServer.emit("success", "Actualizacion de producto realizada");
     });
     socket.on("delProd", (id) => {
         products.deleteProduct(id)
-        socketServer.emit("success", "Producto Eliminado Correctamente");
+        socketServer.emit("success", "Se eliminó el producto");
     });
     socket.on("delProdPremium", ({id, owner, email}) => {
         console.log(owner)
@@ -147,11 +147,11 @@ socketServer.on("connection", socket => {
             products.deleteProduct(id)
             socketServer.emit("success", "Producto Eliminado Correctamente");
         }else{
-            socketServer.emit("errorDelPremium", "Error al eliminar el producto porque no pertenece a usuario Premium");
+            socketServer.emit("errorDelPremium", "No cuenta con autorización para eliminar");
         }  
     });
     socket.on("notMatchPass", () => {
-        socketServer.emit("warning", "Las contraseñas son distintas, reintente");
+        socketServer.emit("warning", "Las contraseñas deben ser iguales");
     });
     socket.on("validActualPass", async({newPassword, newPasswordVerif, email}) => {
         const emailToFind = email;
