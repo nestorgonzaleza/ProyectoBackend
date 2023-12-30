@@ -1,67 +1,72 @@
 const socket = io()
 
-document.getElementById('prod-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const idInput = document.getElementById('productId');
-    const id = idInput.value;
-    idInput.value = '';
-
-    const emailInput = document.getElementById('correoLogin');
-    const email = emailInput.value;
-
-    const descInput = document.getElementById('desc');
-    const description = descInput.value;
-    descInput.value = '';
-
-    // const imgInput = document.getElementById('img');
-    // const image = imgInput.value;
-    // imgInput.value = '';
-
-    const priceInput = document.getElementById('price');
-    const price = priceInput.value;
-    priceInput.value = '';
-
-    const stockInput = document.getElementById('stock');
-    const stock = stockInput.value;
-    stockInput.value = '';
-
-    const catInput = document.getElementById('cat');
-    const category = catInput.value;
-    catInput.value = '';
-
-    const availableInput = document.getElementById('available');
-    const available = availableInput.value;
-
-    const ownerInput = document.getElementById('owner');
-    const owner = ownerInput.value;
-    ownerInput.value = '';
-
+document.addEventListener("DOMContentLoaded", function () {
 
     
-    const newProduct = {
-        description: description,
-        // image:image,
-        price: price,
-        stock: stock,
-        category: category,
-        availability: available,
-        owner: owner,
-    }
-    
-    if (id === '') {
+    // Obtener referencia al formulario y al campo de ID
+    const prodForm = document.getElementById("prod-form");
+    const idInput = document.getElementById("productId");
 
-        // Si el ID está vacío, es un nuevo producto (crear)
-        socket.emit("newProd", newProduct);
+    // Manejar cambios en las opciones de operación
+    prodForm.addEventListener("change", function (event) {
+        const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
 
-    } else {
+        // Mostrar u ocultar el campo de ID según la operación seleccionada
+        idInput.style.display = (selectedOperation === "edit") ? "block" : "none";
+
+        // Limpiar el valor del campo de ID si se selecciona "Agregar producto"
+        if (selectedOperation === "add") {
+            idInput.value = '';
+        }
+    });
+
+    // Manejar envío del formulario
+    prodForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
+
+        // Obtener valores del formulario según la operación seleccionada
+        const id = (selectedOperation === "edit") ? idInput.value : '';
+        const newProduct = {
+            description: document.getElementById("desc").value,
+            price: document.getElementById("price").value,
+            // image: document.getElementById("img").value,
+            owner: document.getElementById("owner").value,
+            stock: document.getElementById("stock").value,
+            category: document.getElementById("cat").value,
+            availability: document.getElementById("available").value
+        };
+
+        // Emitir evento al servidor para realizar la operación correspondiente
+        if (selectedOperation === "add") {
+            socket.emit("newProd", newProduct);
+        } else {
+            Swal.fire({
+                title: "¿Estás segur@ de editar el producto?",
+                text: "Los valores del formulario reemplazarán los actuales",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Sí, deseo editar",
+                cancelButtonText: "Cancelar"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                    socket.emit("updProd", { id: id, newProduct });
+                }
+              });
+
             
-        // Si el ID tiene un valor, es un producto existente (actualizar)
-        socket.emit("updProd", { id: id, newProduct });
+        }
 
-    }
+        // Limpiar el formulario después de la operación
+        prodForm.reset();
+    });
 
 });
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -70,9 +75,23 @@ document.addEventListener("DOMContentLoaded", function () {
         const productId = this.closest("li").getAttribute("data-id");
         const owner = this.closest("li").getAttribute("data-owner");
         const email = document.getElementById("correoLogin").value;
-  
-        // Emitir evento al servidor para eliminar el producto
-        socket.emit("delProdPremium", { id: productId, owner: owner, email: email });
+        
+        Swal.fire({
+            title: "¿Estás segur@ de eliminar el producto?",
+            text: "No podrás revertir la eliminación del producto",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Sí, deseo eliminarlo",
+            cancelButtonText: "Cancelar"
+          }).then((result) => {
+            if (result.isConfirmed) {
+                socket.emit("delProdPremium", { id: productId, owner: owner, email: email });
+            }
+          });
+        
+
       });
     });
   });
@@ -82,7 +101,7 @@ socket.on("success", (data) => {
         icon: 'success',
         title: data,
         text: `A continuación verás la lista actualizada`,
-        confirmButtonText: 'Aceptar', // Cambia el texto del botón Aceptar
+        confirmButtonText: 'Aceptar', 
     }).then((result) => {
         if (result.isConfirmed) {
             location.reload(); // Recarga la página cuando se hace clic en Aceptar
@@ -94,7 +113,7 @@ socket.on("errorDelPremium", (data) => {
     Swal.fire({
         icon: 'error',
         title: data,
-        confirmButtonText: 'Aceptar', // Cambia el texto del botón Aceptar
+        confirmButtonText: 'Aceptar', 
     }).then((result) => {
         if (result.isConfirmed) {
             location.reload(); // Recarga la página cuando se hace clic en Aceptar
