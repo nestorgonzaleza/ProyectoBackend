@@ -13,6 +13,7 @@ export default class Products {
     }
 
     getProductById = async (id) => { 
+
         try 
         {
           const prod = await productsModel.findById(id).lean();    

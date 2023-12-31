@@ -119,7 +119,7 @@ socketServer.on("connection", socket => {
     
 
     socket.on("newProd", async (newProduct) => {
-        
+
         let validUserPremium = await users.getUserRoleByEmail(newProduct.owner)
 
         if(validUserPremium == 'premium'){
@@ -138,6 +138,15 @@ socketServer.on("connection", socket => {
         products.deleteProduct(id)
         socketServer.emit("success", "Se eliminó el producto");
     });
+
+    // Encontrar el producto seleccionado en la lista de productos
+    socket.on("dataProd", async (id) =>{
+
+        const productData = await products.getProductById(id)
+
+        socketServer.emit("foundProd", productData)
+    });
+
     socket.on("delProdPremium", ({id, owner, email}) => {
 
         if(owner == email){
