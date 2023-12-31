@@ -126,7 +126,7 @@ socketServer.on("connection", socket => {
             products.addProduct(newProduct)
             socketServer.emit("success", "Nuevo producto agregado con éxito");
         }else{
-            socketServer.emit("errorUserPremium", "Owner no es usuario premium");
+            socketServer.emit("errorUserPremium", "Usuario no posee cuenta premium");
         }
         
     });
