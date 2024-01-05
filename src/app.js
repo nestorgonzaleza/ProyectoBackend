@@ -16,7 +16,9 @@ import UserDTO from './dao/DTOs/users.dto.js'
 import { engine } from "express-handlebars"
 import crypto from 'crypto'
 import {Server} from "socket.io"
-
+//apidoc
+import swaggerJSDoc from 'swagger-jsdoc';
+import SwaggerUiExpress from "swagger-ui-express"
 //importación rutas
 import cartsRouter from './routes/carts.router.js'
 import productsRouter from './routes/products.router.js'
@@ -45,6 +47,23 @@ mongoose.connect(config.mongo_url)
 .catch((error)=>{
     console.error(`Error al intentar conectar a la BD: ${error}`)
 })
+
+//apidocs swagger
+const swaggerOptions = {
+    definition:{
+        openapi: "3.0.1",
+        info: {
+            title: "Documentación de Api",
+            description: "Documentación de rutas para ecommerce"
+        },
+    },
+    apis:["src/docs/products.yaml",
+        "src/docs/carts.yaml"]
+}
+
+const specs = swaggerJSDoc(swaggerOptions)
+app.use("/apidocs", SwaggerUiExpress.serve, SwaggerUiExpress.setup(specs))
+
 
 //passport middleware y jwt
 

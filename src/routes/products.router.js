@@ -8,39 +8,26 @@ const router = Router()
 const productMongo = new Products()
 
 router.get("/", async (req, res) => {
-    req.logger.info('Cargando productos');
-    let result = await productMongo.get()
-    res.send({ status: "success", payload: result })
+    try{
+        req.logger.info('Cargando productos');
+        let result = await productMongo.get()
+        res.status(200).send({ status: "success", payload: result });
+        
+    }catch(error){
+        res.status(500).send({ status: "error", message: "Error interno del servidor" });
+    }
 
 })
 
 router.post("/", async (req, res) => {
-
-    let { description, price, stock, category, availability, owner } = req.body  //aqui irá también image con la mejora del maquetado
-
-    if(owner === undefined || owner == ''){
-        owner = 'admin@admin.cl'
-    }
-
-    const product = { description, price, stock, category, availability, owner} //aqui irá también image con la mejora del maquetado
-
-    if (!description || !price) {
-        try {
-            req.logger.info('Se ha creado el producto con éxito!');
-        } catch (error) {
-            req.logger.error("Error de código: " + error.message);
-            console.error(error);
-        }
-    }
-
-    let productCreate = new ProductDTO({ description, price, stock, category, availability, owner })  //aqui irá también image con la mejora del maquetado
-    let userPremium = await userService.getRoleUser(owner)
-    if(userPremium == 'premium'){
+    try{
+        let { name, description, price, stock, category, availability, owner } = req.body  //aqui irá también image con la mejora del maquetado
+        let productCreate = new ProductDTO({ name, description, price, stock, category, availability, owner })  //aqui irá también image con la mejora del maquetado
         let result = await productService.createProduct(productCreate)
-    }else{
-        req.logger.error("Error de autorización");
-    }
-
+        res.status(200).send({ status: "success", payload: result });
+    }catch(error){
+        res.status(500).send({ status: "error", message: "Error interno del servidor" });
+    }  
 })
 
 export default router

@@ -24,6 +24,8 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "socket.io": "^4.7.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
     "winston": "^3.11.0"
   }
 }

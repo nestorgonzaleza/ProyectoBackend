@@ -1,0 +1,104 @@
+paths:
+  /api/carts:
+    get:
+      summary: Obtiene todos los carritos
+      tags: 
+        - Carritos
+      responses:
+        "200":
+          description: "Carritos obtenidos con éxito"
+          content:
+            application/json:
+              schema:
+                type: array               
+        "500":
+          description: "Error interno del servidor"
+    post:
+      summary: Ingresa un carrito
+      tags:
+        - Carritos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productId:
+                        type: string
+                        description: ID del producto
+                      quantity:
+                        type: integer
+                        description: Cantidad del producto en el carrito
+                  description: Arreglo de productos en el carrito
+              required:
+                - products
+      responses:
+        "200":
+          description: "Carrito creado correctamente"
+        "500":
+          description: "Error interno del servidor"
+  /api/carts/{cid}/buy:
+    post:
+      summary: Realiza la compra de un carrito
+      tags:
+        - Carritos
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito a comprar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productos:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                        description: Descripción del producto
+                      # image: // a la espera maquetado
+                      #   type: string
+                      #   description: URL de la imagen del producto
+                      price:
+                        type: number
+                        description: Precio del producto
+                      stock:
+                        type: integer
+                        description: Stock disponible del producto
+                      category:
+                        type: string
+                        description: Categoría del producto
+                      availability:
+                        type: string
+                        enum: ['available_stock', 'no_stock_available']
+                        description: Disponibilidad del producto
+                  description: Lista de productos en el carrito
+                correo:
+                  type: string
+                  description: Correo electrónico cliente
+              required:
+                - productos
+                - correo
+      responses:
+        "200":
+          description: "Compra concretada con éxito"
+        "300":
+          description: "No hay stock disponible"
+        "401":
+          description: "No se encontró el ID para el carrito"
+        "500":
+          description: "Error interno al procesar"

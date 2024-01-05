@@ -1,0 +1,65 @@
+paths:
+  /api/products:
+    get:
+      summary: Obtiene todos los productos
+      tags: 
+        - Productos
+      responses:
+        "200":
+          description: "Se han obtenido los productos exitosamente"
+          content:
+            application/json:
+              schema:
+                type: array                
+        "500":
+          description: "Error interno del servidor"
+    post:
+      summary: Agrega un nuevo producto
+      tags:
+        - Productos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Nombre del producto
+                description:
+                  type: string
+                  description: Descripcion de producto
+                # image: // a la espera de maquetado
+                #   type: string
+                #   description: Imagen de producto
+                price:
+                  type: number
+                  description: Precio producto
+                stock:
+                  type: number
+                  description: Stock producto
+                category:
+                  type: string
+                  description: Categoria producto
+                availability:
+                  type: string
+                  enum: ['available_stock', 'no_stock_available']
+                  description: Disponibilidad producto en base a su stock
+                owner:
+                  type: string
+                  description: Propietario producto
+              required:
+                - name
+                - description
+                # - image a la espera del maquetado
+                - price
+                - stock
+                - category
+                - availability
+                - owner
+      responses:
+        "200":
+          description: "Producto agregado con éxito"
+        "500":
+          description: "Error interno del servidor"

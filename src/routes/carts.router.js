@@ -9,35 +9,58 @@ const router = Router()
 const cartMongo = new Carts()
 
 router.get("/", async (req, res) => {
+    try{
+        let result = await cartMongo.get()
+        res.status(200).send({ status: "success", payload: result });
 
-    let result = await cartMongo.get()
-    res.send({ status: "success", payload: result })
+    }catch(error){
+        res.status(500).send({ status: "error", message: "Error interno del servidor" });
+    }
+
 
 })
 
 router.post("/", async (req, res) => {
-
-    let { products } = req.body
-    const correo = req.body.correo;
-    let roleUser = userService.getRoleUser(products.owner)
-
-    if(roleUser == 'premium' && correo == products.owner)
-    {
-        console.log("No se puede agregar al carrito un producto que ya pertenece al usuario")
-    }else{
+    try{
+        let { products } = req.body
         let cart = new CartDTO({ products })
         let result = await cartService.createCart(cart)
+        res.status(200).send({ status: "success", payload: result });
+    }catch(error){
+        res.status(500).send({ status: "error", message: "Error interno del servidor" });
     }
-
-    if(result){
-        req.logger.info('Se ha creado un carrito con éxito!');
-    }else{
-        req.logger.error("No fue posible crear el carrito");
-    }
-
+    
 })
 
 router.post("/:cid/buy", async (req, res) => {
+
+    // body para apidocs:
+    // 1)INGRESAR EN apidocs a  /api/carts
+    // 2) y luego repetir el mismo body en/api/carts/{cid}/buy
+    // reemplazando {cid} con el id del carrito creado al usar /api/carts
+    
+    // {
+    //     "productos": [
+    //       {
+    //         "name": "prod 1",
+    //         "description": "Prod 1",
+    //         "price": 100,
+    //         "stock": 5,
+    //         "category": "categoria 1",
+    //         "availability": "available_stock"
+    //       },
+    //       {
+    //         "name": "prod 2",
+    //         "description": "Prod 2",
+    //         "price": 100,
+    //         "stock": 5,
+    //         "category": "categoria 1",
+    //         "availability": "available_stock"
+    //       }
+    //     ],
+    //     "correo": "test@coder.com"
+    // }
+
     try {
 
         let id_cart = req.params.cid;
@@ -47,8 +70,9 @@ router.post("/:cid/buy", async (req, res) => {
         let cart = cartService.validateCart(id_cart)
 
         if (!cart) {
-            req.logger.error("No se encontró el ID para el carrito");
-            return { error: "No se encontró el ID para el carrito" };
+            // req.logger.error("No se encontró el ID para el carrito");
+            // return { error: "No se encontró el ID para el carrito" };
+            res.status(401).send({ status: "error", message: "No se encontró el ID para el carrito" });
         }
         let validateStock = cartService.validateStock({productos})
 
@@ -57,9 +81,11 @@ router.post("/:cid/buy", async (req, res) => {
             let totalAmount = await cartService.getAmount({productos})
             const ticketBase = new TicketDTO({amount:totalAmount, purchaser:correo});
             const result = await ticketService.createTicket(ticketBase);
+            res.status(200).send({ status: "success", payload: result });
 
         } else {
             console.log("No hay stock");
+            res.status(300).send({ status: "error", message: "No hay stock disponible" });
         }
         
     } catch (error) {
