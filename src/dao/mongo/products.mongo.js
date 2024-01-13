@@ -52,6 +52,7 @@ export default class Products {
             let result = await productsModel.updateOne({ _id: new mongoose.Types.ObjectId(productId) }, { $set: productInfo });
             // console.log("Producto actualizado ", result)
             logger.warn("Producto actualizado ", result)
+            return result
 
         } catch (error) {
             logger.error('Error al actualizar producto:', error);
@@ -68,15 +69,15 @@ export default class Products {
             }
     
             let deletedProduct = await productsModel.deleteOne({ _id: new mongoose.Types.ObjectId(productId) });
-    
-            if (deletedProduct.deletedCount > 0) {
-                   return 'Producto eliminado';
-            } else {
-                return 'No existe ID válido para el producto';
-            }
+            return deletedProduct
+            // if (deletedProduct.deletedCount > 0) {
+            //        return 'Producto eliminado';
+            // } else {
+            //     return 'No existe ID válido para el producto';
+            // }
         } catch (error) {
             logger.error('No se logró eliminar el producto:', error);
-            // console.error('No se logró eliminar el producto:', error);
+            console.error('No se logró eliminar el producto:', error);
             return 'No se logró eliminar el producto';
         }
     };

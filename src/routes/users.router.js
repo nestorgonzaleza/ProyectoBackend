@@ -15,29 +15,40 @@ router.get("/", async (req, res) => {
 })
 
 router.post("/", async (req, res) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    let { first_name, last_name, email, age, password, role } = req.body
+    // let { first_name, last_name, email, age, password, role } = req.body
     
-    if(!first_name || typeof first_name !== 'string' || !last_name || typeof last_name !== 'string'|| !email || !emailRegex.test(email) ||!age || !Number.isInteger(age)){
-        CustomError.createError({
-            name:"Error en la creación de usuario",
-            cause: generateUserErrorInfo({first_name, last_name, age, email}),
-            message: "Error al intentar crear un nuevo usuario",
-            code: EErrors.INVALID_TYPES_ERROR
-        })
+    // if(!first_name || typeof first_name !== 'string' || !last_name || typeof last_name !== 'string'|| !email || !emailRegex.test(email) ||!age || !Number.isInteger(age)){
+    //     CustomError.createError({
+    //         name:"Error en la creación de usuario",
+    //         cause: generateUserErrorInfo({first_name, last_name, age, email}),
+    //         message: "Error al intentar crear un nuevo usuario",
+    //         code: EErrors.INVALID_TYPES_ERROR
+    //     })
+    // }
+
+    // let userCreate = new UserDTO({ first_name, last_name, email, age, password, role })
+
+    // let result = await userService.createUser(userCreate)
+    // if(result){
+    //     req.logger.info('Usuario creado con éxito');
+    // }else{
+    //     req.logger.error("Error al crear Usuario");
+    // } 
+    // console.log(result)
+    try
+    {
+        let { first_name, last_name, email, age, password, role } = req.body
+        let user = new UserDTO({ first_name, last_name, email, age, password, role })
+        let result = await userService.createUser(user)
+        res.status(200).send({ status: "success", payload: result });
+    }
+    catch (error)
+    {
+        res.status(500).send({ status: "error", message: "Error interno del servidor" });
     }
 
-    let userCreate = new UserDTO({ first_name, last_name, email, age, password, role })
-
-    let result = await userService.createUser(userCreate)
-    if(result){
-        req.logger.info('Usuario creado con éxito');
-    }else{
-        req.logger.error("Error al crear Usuario");
-    } 
-    console.log(result)
-    
 })
 
 router.post("/premium/:uid", async (req, res) => {
