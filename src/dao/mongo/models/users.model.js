@@ -8,7 +8,14 @@ const userSchema = new mongoose.Schema({
     email: String,
     age: Number,
     password: String,
-    role: String
+    role: String,
+    documents: [
+        {
+            name:{type: String},
+            reference:{type: String}
+        }
+    ],
+    last_connection: Date
 })
 
 const usersModel = mongoose.model(usersCollection, userSchema)

@@ -89,7 +89,8 @@
     document.getElementById('logoutButton').addEventListener('click', cerrarSesion);
     function cerrarSesion() {
         localStorage.removeItem("token");
-        window.location.href = '/';
+        const userEmail = "{{email}}"
+        window.location.href = '/logout?email=' + userEmail
     }
 
     document.addEventListener("DOMContentLoaded", function () {

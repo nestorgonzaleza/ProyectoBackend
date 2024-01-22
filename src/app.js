@@ -233,37 +233,40 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Error de autenticación" });
     }
 
-    // comparar contraseña ingresada vs bd
+    // validar pass
     try {
         const passwordMatch = isValidPassword(user, password);
 
         if (!passwordMatch) {
-            req.logger.error("Error de autenticación: Contraseña incorrecta");
+            req.logger.error("Error: Contraseña inválida");
             return res.status(401).json({ message: "Error de autenticación" });
         }
 
-        // si la contraseña coincide...
-        const token = generateAndSetToken(res, email, password);  // Aquí se encripta la contraseña antes de usarla
+        // pass ok...
+        const token = generateAndSetToken(res, email, password);  
         const userDTO = new UserDTO(user);
         const prodAll = await products.get();
+        users.setLastConnection(email)
         res.json({ token, user: userDTO, prodAll });
 
-        // Logeo completo
+       
         req.logger.info("Inicio de sesión exitoso para el usuario: " + emailToFind);
+
     } catch (error) {
-        // Manejo de errores relacionados con bcrypt
+
         req.logger.error("Error al comparar contraseñas: " + error.message);
         console.error("Error al comparar contraseñas:", error);
         return res.status(500).json({ message: "Error interno del servidor" });
+
     }
 });
 
 app.post("/api/register", async (req, res) => {
     const { first_name, last_name, email, age, password, role } = req.body;
     const emailToFind = email;
-    const exists = await users.findEmail({ email: emailToFind });
+    const emailFound = await users.findEmail({ email: emailToFind });
 
-    if (exists) {
+    if (emailFound) {
         req.logger.warn("Este correo ya se encuentra en uso: " + emailToFind);
         return res.send({ status: "error", error: "El usuario ya está en uso" });
     }
@@ -279,16 +282,19 @@ app.post("/api/register", async (req, res) => {
     };
 
     try {
+
         users.addUser(newUser);
         const token = generateAndSetToken(res, email, password);
         res.send({ token });
 
-        // Logeo ok
         req.logger.info("Se ha registrado exitosamente el siguiente usuario: " + emailToFind);
+
     } catch (error) {
+
         req.logger.error("Error al registrarse: " + error.message);
         console.error("Error al registrarse:", error);
         res.status(500).json({ message: "Error interno del servidor" });
+
     }
 });
 
@@ -301,19 +307,21 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/current', passportCall('jwt', { session: false }), authorization('user'),(req,res) =>{
-    req.logger.info("Se inicia current");
-    authorization('user')(req, res,async() => {      
+    authorization('user')(req, res,async() => {
+        const userInfo = {
+            email: req.user.email
+        }      
         const prodAll = await products.get();
-        res.render('home', { products: prodAll });
+        res.render('home', { products: prodAll, user: userInfo });
     });
 })
 
 app.get('/current-super',passportCall('jwt', { session: false }), authorization('user'),(req,res) =>{
-    req.logger.info("Se inicia current premium");
     authorization('user')(req, res, async() => {  
         const {token} = req.query;
  
         const emailToken = getEmailTokenLogin(token) 
+
         const prodAll = await products.get();
         
         res.render('home-super', { products: prodAll, email: emailToken });
@@ -321,29 +329,35 @@ app.get('/current-super',passportCall('jwt', { session: false }), authorization(
 })
 
 app.get('/admin',passportCall('jwt'), authorization('user'),(req,res) =>{
-    req.logger.info("Se inicia página admin");
     authorization('user')(req, res,async() => {    
         const prodAll = await products.get();
         res.render('admin', { products: prodAll });
     });
 })
 
+app.get('/logout', (req, res) => {
+    req.logger.info("Se Cierra Sesión");
+    let email = req.query.email
+    users.setLastConnection(email)
+    res.redirect('/');
+});
+
 //Restablecimiento de contraseña
 
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     const emailToFind = email;
-    const userExists = await users.findEmail({ email: emailToFind });
-    if (!userExists) {
+    const userFound = await users.findEmail({ email: emailToFind });
+    if (!userFound) {
 
       console.error("No se pudo restablecer la contraseña, "+email+" no existe")
       res.json("No se pudo restablecer la contraseña, "+email+" no existe" );
       return res.status(401).json({ message: "Error al reestablecer contraseña" });
     }
-    // Crear y firmar el token JWT con una expiración de 1 hora
+    // token 1 h
     const token = generateAndSetTokenEmail(email)
   
-    // Configurar el enlace de restablecimiento de contraseña
+    // link para password
     const resetLink = `http://localhost:8080/reset-password?token=${token}`;
   
     let result = transporter.sendMail({
@@ -365,7 +379,7 @@ app.post('/forgot-password', async (req, res) => {
   });
 
 app.get('/reset-password', async (req, res) => {
-    const { token} = req.query;
+    const {token} = req.query;
     const validate = valTokenResetPass(token)
     const emailToken = getEmailToken(token)
     if(validate){

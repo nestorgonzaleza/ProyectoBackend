@@ -1,4 +1,5 @@
 <h1>Perfil usuario</h1>
+Bienvenido! <span id="emailUsuario">{{user.email}}</span>
 <button id="logoutButton">Cerrar Sesión</button>
 <div class="container">
     <div class="infoProd">
@@ -44,7 +45,8 @@
     document.getElementById('logoutButton').addEventListener('click', cerrarSesion);
     function cerrarSesion() {
         localStorage.removeItem("token");
-        window.location.href = '/';
+        const userEmail = "{{user.email}}"
+        window.location.href = '/logout?email=' + userEmail
     }
 </script>
 <script src="/socket.io/socket.io.js"></script>

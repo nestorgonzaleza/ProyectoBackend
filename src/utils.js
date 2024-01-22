@@ -5,6 +5,8 @@ import { fileURLToPath } from "url"
 import nodemailer from 'nodemailer'
 import config from "./config/config.js"
 import { faker } from "@faker-js/faker"
+import multer from "multer"
+import fs from 'fs'
 
 export const createHash = async password => {
     const sRounds = 10
@@ -58,6 +60,57 @@ export const generateProducts=()=>{
     }
 }
 
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const fileType = file.fieldname;
+      let uploadPath = 'public/files/';
+  
+      // Determina la carpeta de destino según el tipo de archivo
+      switch (fileType) {
+        case 'profiles':
+          uploadPath += 'profiles/';
+          break;
+        case 'products':
+          uploadPath += 'products/';
+          break;
+        case 'documents':
+          uploadPath += 'documents/';
+          break;
+        case 'identification': //identificacion
+          uploadPath += 'documents/';
+          break;
+       case 'proof_of_address': //comprobante domicilio
+          uploadPath += 'documents/';
+          break;
+       case 'statement_of_accounts': // comprobante cuenta
+          uploadPath += 'documents/';
+          break;
+        default:
+          uploadPath += 'other/';
+          break;
+      }
+  
+      // Generar carpeta si no existe aún
+      const fullPath = path.join(__dirname, uploadPath);
+      if (!fs.existsSync(fullPath)) {
+        fs.mkdirSync(fullPath, { recursive: true });
+      }
+  
+      cb(null, fullPath);
+    },
+    filename: (req, file, cb) => {
+      const fileType = file.fieldname;
+  
+      // Nombres únicos de archivos con Date y random
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const fileExtension = path.extname(file.originalname);
+      const finalFilePath = fileType + '-' + uniqueSuffix + fileExtension;
+  
+      cb(null, finalFilePath);
+    }
+  });
+
+  export const addFile = multer({ storage: storage });
 
 
 const __filename = fileURLToPath(import.meta.url)

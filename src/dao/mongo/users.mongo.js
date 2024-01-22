@@ -78,10 +78,9 @@ export default class Users {
 
     getUserRoleByEmail = async (email) => {
         try {
-          // Buscar el usuario por correo electrónico en tu modelo de usuario
+          
           const user = await usersModel.findOne({ email });
-      
-          // Verificar si se encontró un usuario y si tiene un rol premium
+                
           if (user && user.role === 'premium') {
             return 'premium'
           } else {
@@ -93,11 +92,11 @@ export default class Users {
         }
     };
 
-    updatePassword = async (email, newPassword) => {
+    updatePassword = async (email, newPass) => {
         try {
             const updatedUser = await usersModel.findOneAndUpdate(
                 { email: email },
-                { $set: { password: newPassword } },
+                { $set: { password: newPass } },
                 { new: true } 
             );
     
@@ -132,19 +131,101 @@ export default class Users {
         try {
           const updatedUser = await usersModel.findByIdAndUpdate(
             uid,
-            { $set: { role: role } },
+            // { $set: { role: role } },
+            { $set: { role: 'premium' } },
             { new: true }
           );
-      
+          console.log("Este es el que pasa por updateuserrolebyid:", updatedUser)  
           if (updatedUser) {
             return updatedUser;
           } else {
-            console.error('Usuario no encontrado');
-            return null; // o lanza una excepción según tus necesidades
+            console.error('No se encontró el usuario');
+            return null; 
           }
         } catch (error) {
-          console.error('Error al actualizar el rol:', error);
-          return 'Error al actualizar el rol';
+          console.error('No se pudo actualizar el rol:', error);
+          return 'Error al actualizar rol';
         }
       };
+
+    manageNewDocuments = async (userId, newDocuments) => {
+      try{
+        //buscar usuario
+        const user = await usersModel.findById(userId)
+
+        if (!user) {
+          console.error("No se encontró el ID del usuario")
+          return null
+        }
+        //verificar que la clave de documents sea arreglo
+        if (!Array.isArray(user.documents)) {
+          user.documents = []
+        }
+
+        //pushear los documentos a documents
+        user.documents.push(...(Array.isArray(newDocuments) ? newDocuments : [newDocuments]))
+
+        const updatedDocumentsUser = await user.save()
+        return updatedDocumentsUser
+
+      } catch (error) {
+
+        console.error("Error al gestionar documentos: ", error)
+        throw error
+      }
+    }  
+
+    verifyDocuments = async (userId) =>{
+      try{
+
+        const user = await usersModel.findById(userId)
+        //si no se encuentra el usuario o no hay elementos en el array documents
+        if(!user || !Array.isArray(user.documents)){
+          return false
+        }
+
+        const requiredDocuments = [
+          'identification',
+          'proof_of_address',
+          'statement_of_accounts'
+        ]
+
+        //verificar que los documentos están...
+        for (const requiredDocument of requiredDocuments) {
+          const documentOK = user.documents.some(document => document.name === requiredDocument);
+          if (!documentOK) {
+            return false; 
+          }
+        }
+        // si están los 3 tipos de documentos...
+        return true
+
+      } catch(error) {
+        console.error('No fue posible verificar los documentos:', error);
+        throw error;
+      }
+    }
+
+
+    //guardar última conexión
+    setLastConnection = async (email) => {
+      try{
+        const updatedConnectionUser = await usersModel.findOneAndUpdate(
+          { email: email}, { $set: { last_connection: new Date() } }, { new: true}
+        )
+
+        if (updatedConnectionUser) {
+          return updatedConnectionUser
+        } else {
+          console.error("No fue posible actualizar última conexión")
+          return null
+        }
+
+      } catch (error) {
+        console.error("Falló actualizar última conexión: ", error)
+        throw error
+      }
+    }
+
+
 }
