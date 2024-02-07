@@ -14,5 +14,13 @@ export default class ProductRepository {
         let result = await this.dao.get()
         return result
     }
+    updateProduct = async (productId, productInfo) => {
+        let result = await this.dao.updateProduct(productId, productInfo)
+        return result
+    }
 
+    deleteProduct = async (productId) => {
+        let result = await this.dao.deleteProduct(productId)
+        return result
+    }
 }

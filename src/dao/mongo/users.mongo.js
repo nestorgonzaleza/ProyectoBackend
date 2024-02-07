@@ -61,8 +61,37 @@ export default class Users {
         }      
     }
 
-   
+    deleteUserById = async (id) => { 
+      try 
+      {
+        const userDeleted = await usersModel.deleteOne({_id: id}).lean();    
+        if (!userDeleted) 
+        {
+          return 'No fue posible encontrar el usuario a eliminar';
+        }   
+        return userDeleted;
+      } catch (error) {
+          // logger.error('No se encontró el id de usuario:', error)
+        console.error('No se encontró el usuario:', error);
+        return 'Error al obtener el usuario a eliminar';
+      }
+    }
 
+    deleteUserByEmail = async (emailUser) => { 
+      try 
+      {
+        const userDeleted = await usersModel.deleteOne({email: emailUser}).lean();    
+        if (!userDeleted) 
+        {
+          return 'No fue posible encontrar el usuario a eliminar';
+        }   
+        return userDeleted;
+      } catch (error) {
+          // logger.error('No se encontró el id de usuario:', error)
+        console.error('No se encontró el usuario:', error);
+        return 'Error al obtener el usuario a eliminar';
+      }
+    }
 
     findJWT = async (fJWT) => {
         try
@@ -76,14 +105,30 @@ export default class Users {
         }      
     }
 
+    getUserByEmail = async (email) => {
+      try {
+          
+        const user = await usersModel.findOne({ email });
+        return user
+        
+      } catch (error) {
+        console.error('Error al obtener usuario:', error);
+        return 'Error al obtener el usuario';
+      }
+    };
+    
+    
     getUserRoleByEmail = async (email) => {
         try {
           
           const user = await usersModel.findOne({ email });
-                
+   
           if (user && user.role === 'premium') {
             return 'premium'
-          } else {
+          }
+          else if(user && user.role === 'admin'){
+            return 'admin'
+          }else {
             return "usuario con otro rol"
           }
         } catch (error) {
@@ -127,6 +172,25 @@ export default class Users {
         }
     };
     
+    updateUserRoleByEmail = async (email, role) => {
+      try {
+        const updatedUser = await usersModel.findOneAndUpdate(
+          { email: email },
+          { $set: { role: role } },
+          { new: true }
+        );
+        if (updatedUser) {
+          return updatedUser;
+        } else {
+          console.error('No se encontró el usuario');
+          return null; 
+        }
+      } catch (error) {
+        console.error('No se pudo actualizar el rol:', error);
+        return 'Error al actualizar rol';
+      }
+    };
+
     updateUserRoleById = async ({uid, role}) => {
         try {
           const updatedUser = await usersModel.findByIdAndUpdate(
@@ -213,7 +277,7 @@ export default class Users {
         const updatedConnectionUser = await usersModel.findOneAndUpdate(
           { email: email}, { $set: { last_connection: new Date() } }, { new: true}
         )
-
+        
         if (updatedConnectionUser) {
           return updatedConnectionUser
         } else {

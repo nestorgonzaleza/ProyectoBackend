@@ -1,5 +1,7 @@
 <h1>Perfil usuario</h1>
 Bienvenido! <span id="emailUsuario">{{user.email}}</span>
+
+<a href="/api/carts/mycart/{{user.email}}/{{user.cart}}">Ir a mi carrito!!</a>
 <button id="logoutButton">Cerrar Sesión</button>
 <div class="container">
     <div class="infoProd">
@@ -8,12 +10,14 @@ Bienvenido! <span id="emailUsuario">{{user.email}}</span>
             <div id="productsContainer">
                 <ul>
                     {{#each products}}
-                    <li>
+                    <li data-name="{{this.name}}"data-description="{{this.description}}" {{!-- data-image="{{this.image}}" --}} data-price="{{this.price}}" 
+                    data-stock="{{this.stock}}" data-category="{{this.category}}" data-available="{{this.availability}}"
+                    data-owner="{{this.owner}}" data-id="{{this._id}}">
                         <strong>{{this.description}}</strong><br>
                         Price: ${{this.price}}<br>
                         Stock: {{this.stock}}<br>
                         Category: {{this.category}}<br>
-                        <button>Agregar</button>
+                        <button class="agregarAlCarritoBtn">Agregar</button>
                     </li>
                     {{/each}}
                 </ul>

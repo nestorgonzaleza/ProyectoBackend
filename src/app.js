@@ -5,6 +5,7 @@ import passport from "passport"
 import cookieParser from "cookie-parser"
 import UserMongo from "./dao/mongo/users.mongo.js"
 import ProdMongo from "./dao/mongo/products.mongo.js"
+import CartsMongo from "./dao/mongo/carts.mongo.js"
 import { Strategy as JwtStrategy } from 'passport-jwt';
 import { ExtractJwt } from 'passport-jwt';
 import __dirname, { authorization, passportCall, transporter, createHash, isValidPassword } from "./utils.js"
@@ -16,6 +17,7 @@ import UserDTO from './dao/DTOs/users.dto.js'
 import { engine } from "express-handlebars"
 import crypto from 'crypto'
 import {Server} from "socket.io"
+import cartsModel from './dao/mongo/models/carts.model.js'
 //apidoc
 import swaggerJSDoc from 'swagger-jsdoc';
 import SwaggerUiExpress from "swagger-ui-express"
@@ -38,6 +40,7 @@ const port = 8080
 
 const users = new UserMongo()
 const products = new ProdMongo()
+const carts = new CartsMongo()
 
 //conexión mongoose protegida por .env
 mongoose.connect(config.mongo_url)
@@ -134,18 +137,21 @@ socketServer.on("connection", socket => {
         console.log(data)
     })
     
-//gestión
-    
+//gestión productos
+    //recargar productos
+    socket.on("reloadProducts",()=>{
+        socketServer.emit("success", "Nuevo producto agregado con éxito");
+    })
 
     socket.on("newProd", async (newProduct) => {
 
         let validUserPremium = await users.getUserRoleByEmail(newProduct.owner)
-
-        if(validUserPremium == 'premium'){
+        console.log(validUserPremium)
+        if(validUserPremium == 'premium'||validUserPremium == 'admin'){
             products.addProduct(newProduct)
             socketServer.emit("success", "Nuevo producto agregado con éxito");
         }else{
-            socketServer.emit("errorUserPremium", "Usuario no posee cuenta premium");
+            socketServer.emit("errorUserPremium", "Usuario no posee credenciales para crear");
         }
         
     });
@@ -157,12 +163,23 @@ socketServer.on("connection", socket => {
         products.deleteProduct(id)
         socketServer.emit("success", "Se eliminó el producto");
     });
-
+    //producto añadido
+    socket.on("addedProduct",()=>{
+        socket.emit("success", "Prodcuto añadido exitosamente")
+    })
+    //producto eliminado
+    socket.on("deletedProduct", ()=>{
+        socket.emit("success", "Producto eliminado exitosamente")
+    })
+    //producto editado
+    socket.on("editedProduct", ()=>{
+        socket.emit("success", "Producto editado exitosamente")
+    })
     // Encontrar el producto seleccionado en la lista de productos
     socket.on("dataProd", async (id) =>{
-
+     
         const productData = await products.getProductById(id)
-
+ 
         socketServer.emit("foundProd", productData)
     });
 
@@ -175,6 +192,72 @@ socketServer.on("connection", socket => {
             socketServer.emit("errorDelPremium", "No cuenta con autorización para eliminar");
         }  
     });
+
+//gestión usuarios
+
+    // Encontrar el rol del usuario seleccionado en la lista de usuarios
+    socket.on("dataUser", async (email) =>{
+
+        const userData = await users.getUserByEmail(email)
+
+        socketServer.emit("foundUser", userData)
+    });
+
+    //actualizar el rol del usuario
+    socket.on("updUser", ({mailUser, newRole}) => {
+
+        users.updateUserRoleByEmail(mailUser, newRole)
+        socketServer.emit("success", "Actualizacion de rol realizada");
+    });
+
+    //eliminar usuario con boton
+    socket.on("delUser", (emailUser) => {
+        users.deleteUserByEmail(emailUser)
+        socketServer.emit("success", "Se eliminó el usuario");
+    });
+    //recargar usuarios
+    socket.on("reloadUsers", async ()=>{
+        socketServer.emit("success", "Usuarios inactivos eliminados");
+    })
+
+//******************gestion compra */   
+    socket.on("addToChart", async ({ email, productId, owner }) => {
+        // const productOwner = products.getOwner(productId)
+        if(owner===email){
+            socket.emit("autoCompra", "No puedes comprar productos que son de tu propiedad")
+
+        }else{
+            try {    
+                const user = await users.getUserByEmail(email)
+                if (user && user.cart) {
+                    const cartId = user.cart._id;
+                    await carts.addProduct(cartId, productId);
+                    socket.emit("success", "Producto añadido al carrito con éxito!");
+                } else {
+                    console.error("Usuario o carrito no encontrados");
+                }
+            
+            }catch(error){
+                console.error("Error al agregar producto al carrito:", error);
+            }
+        }
+    })
+
+// ver carrito
+    socket.on("carrousuario", async (email) =>{
+        const user = await users.getUserByEmail(email)
+        const userMail = email
+        if (user && user.cart) {
+            const cartId = user.cart._id;
+
+
+            socket.emit("solicitudCarro", {cartId,userMail});
+        } else {
+            console.error("Usuario o carrito no encontrados");
+        }
+    });    
+
+//password
     socket.on("notMatchPass", () => {
         socketServer.emit("warning", "Las contraseñas deben ser iguales");
     });
@@ -244,13 +327,16 @@ app.post("/login", async (req, res) => {
 
         // pass ok...
         const token = generateAndSetToken(res, email, password);  
-        const userDTO = new UserDTO(user);
+        // const userDTO = new UserDTO(user);
         const prodAll = await products.get();
+        // console.log(prodAll)
         users.setLastConnection(email)
-        res.json({ token, user: userDTO, prodAll });
-
+     
+        // res.json({ token, user: userDTO, prodAll });
+        res.json({ token, user, prodAll });
        
         req.logger.info("Inicio de sesión exitoso para el usuario: " + emailToFind);
+   
 
     } catch (error) {
 
@@ -272,13 +358,19 @@ app.post("/api/register", async (req, res) => {
     }
 
     const hashedPassword = await createHash(password);
+    const newCart ={
+        products:[]
+    } 
+    const createdCart = await carts.addCart(newCart)
+   
     const newUser = {
         first_name,
         last_name,
         email,
         age,
         password: hashedPassword,
-        role
+        role,
+        cart: createdCart._id
     };
 
     try {
@@ -308,11 +400,13 @@ app.get('/register', (req, res) => {
 
 app.get('/current', passportCall('jwt', { session: false }), authorization('user'),(req,res) =>{
     authorization('user')(req, res,async() => {
-        const userInfo = {
-            email: req.user.email
-        }      
+        const email = req.user.email
+        const user = await users.getUserByEmail(email)
+        const userJSON = user.toJSON()
+         
         const prodAll = await products.get();
-        res.render('home', { products: prodAll, user: userInfo });
+        res.render('home', { products: prodAll, user: userJSON });
+        // res.render('home', { products: prodAll, user: userInfo });
     });
 })
 
@@ -329,11 +423,15 @@ app.get('/current-super',passportCall('jwt', { session: false }), authorization(
 })
 
 app.get('/admin',passportCall('jwt'), authorization('user'),(req,res) =>{
-    authorization('user')(req, res,async() => {    
+    authorization('user')(req, res,async() => {
+        const user = req.user    
         const prodAll = await products.get();
-        res.render('admin', { products: prodAll });
+
+        res.render('admin', { products: prodAll, user });
     });
 })
+
+
 
 app.get('/logout', (req, res) => {
     req.logger.info("Se Cierra Sesión");

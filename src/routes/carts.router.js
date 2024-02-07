@@ -1,12 +1,16 @@
 import { Router } from "express";
 import CartDTO from "../dao/DTOs/carts.dto.js";
 import Carts from "../dao/mongo/carts.mongo.js";
+import Users from "../dao/mongo/users.mongo.js";
+import Products from "../dao/mongo/products.mongo.js";
 import { ticketService, cartService, userService } from "../repositories/pivot.js";
 import TicketDTO from "../dao/DTOs/tickets.dto.js";
 import logger from "../logger.js";
 const router = Router()
 
 const cartMongo = new Carts()
+const usersMongo = new Users()
+const productMongo = new Products() 
 
 router.get("/", async (req, res) => {
     try{
@@ -19,6 +23,52 @@ router.get("/", async (req, res) => {
 
 
 })
+
+router.get("/mycart/:userMail/:cartId", async (req, res) => {
+    try {
+        // const { cartId, userMail } = req.body;
+        const cartId = req.params.cartId
+        const userMail = req.params.userMail 
+        
+        req.logger.info('Cargando carrito...');
+        
+        // Obtener usuario y carrito
+        const user = await usersMongo.getUserByEmail(userMail);
+        const usermail = user.email;
+        const carritoUsuario = await cartMongo.getCart(cartId);
+        const productsInCart = carritoUsuario.products;
+
+        // Obtener catálogo de productos
+        const catalogo = await productMongo.get();
+
+        // Modificar los productos del carrito con información del catálogo
+        const products = productsInCart.map(productInCart => {
+            // Buscar el producto en el catálogo por su productId
+            const productInfo = catalogo.find(product => product._id.equals(productInCart.productId));
+            // Calcular el costo total del producto
+            const totalPrice = productInfo.price * productInCart.quantity;
+            // Crear un nuevo objeto con la información necesaria
+            return {
+                _id: productInfo._id,
+                name: productInfo.name,
+                price: productInfo.price,
+                quantity: productInCart.quantity,
+                totalPrice: totalPrice
+            };
+        });
+
+        // Calcular la sumatoria de los precios totales de los productos en el carrito
+        const totalSum = products.reduce((acc, curr) => acc + curr.totalPrice, 0);
+
+
+        // Renderizar el Handlebars con la información del usuario y los productos en el carrito
+        res.render('home.cart.handlebars', { usermail, products, totalSum });
+      
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ status: "error", message: "Internal Error" });
+    }
+});
 
 router.post("/", async (req, res) => {
     try{

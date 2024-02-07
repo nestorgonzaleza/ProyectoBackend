@@ -29,6 +29,42 @@ export default class Products {
         }
       }
 
+    getProductPriceById = async (id) => { 
+
+        try 
+        {
+          const prod = await productsModel.findById(id).lean();    
+          if (!prod) 
+          {
+            return 'No se encontró el producto';
+          } 
+          const price = prod.price 
+          return price;
+        } catch (error) {
+          console.error('Error al buscar producto:', error);
+          logger.error('No se logró encontrar el producto:', error);
+          return 'Error al obtener el producto';
+        }
+      }
+
+      getProductPriceById = async (id) => { 
+
+        try 
+        {
+          const prod = await productsModel.findById(id).lean();    
+          if (!prod) 
+          {
+            return 'No se encontró el producto';
+          } 
+          const price = prod.price 
+          return price;
+        } catch (error) {
+          console.error('Error al buscar producto:', error);
+          logger.error('No se logró encontrar el producto:', error);
+          return 'Error al obtener el producto';
+        }
+      }
+        
     addProduct = async (productInfo) => {
         try
         {
@@ -81,4 +117,10 @@ export default class Products {
             return 'No se logró eliminar el producto';
         }
     };
+
+    getOwner = async (productId) =>{
+        const prod = await productsModel.findById(productId).lean(); 
+        const owner = prod.owner
+        return owner
+    }
 }

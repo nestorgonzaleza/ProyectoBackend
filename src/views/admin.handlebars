@@ -1,6 +1,7 @@
 <h1>Perfil Administrador</h1>
 <div class="container">
-    Bienvenido! <span id="emailUsuario">{{email}}</span>
+    Bienvenido! <span id="emailUsuario">{{user.email}}</span>
+    <a href="/api/users">Gestionar cuentas de usuario</a>
     <button id="logoutButton">Cerrar Sesión</button>
 
     <div class="formulario">
@@ -9,45 +10,54 @@
         <div class="formulario">
 
             <form id="prod-form">
+                <div id="operationSelect">
                 <input type="radio" name="operation" value="add" checked> Agregar producto
                 <input type="radio" name="operation" value="edit"> Editar producto
+                </div>
                 <div>
                     <select id="productSelect" >
-                        <option value="" selected>Selecciona un producto</option>
+                        <option value="-" selected>Selecciona un producto</option>
                         {{#each products}}
                             <option value="{{this._id}}">{{this.name}}</option>
                         {{/each}}
                     </select>
-                    <button id="fillFormBtn" >Llenar Formulario</button>
+                    
                 </div>
-                <div>
-    
-    </select>
-
-</div>
+                
                 <input type="hidden" id="productId" name="productId" placeholder="ID del producto a editar">
                 <input type="hidden" id="correoLogin" name="correoLogin" value="{{email}}">
                 <div class="inputs">
                     <div>
                         <input type="text" id="name" autocomplete="off" placeholder="Ingrese Nombre" required>
-                        <input type="text" id="desc" autocomplete="off" placeholder="Ingrese Descripcion" required>
-                        {{!-- <input type="text" id="img" autocomplete="off" placeholder="Ingrese Imagen" required> --}}
-                        <input type="number" id="price" autocomplete="off" placeholder="Ingrese Precio" required>
-                        {{!-- <input type="text" id="owner" autocomplete="off" placeholder="Ingrese Owner(Email)" required> --}}
+                        {{!-- <div>
+                            <select id="productSelect" >
+                                <option value="" selected>Selecciona un producto</option>
+                                {{#each products}}
+                                    <option value="{{this._id}}">{{this.name}}</option>
+                                {{/each}}
+                            </select>
+                            
+                        </div> --}}
                     </div>
                     <div>
-                        <input type="number" id="stock" autocomplete="off" placeholder="Ingrese Stock" required>
-                        <input type="text" id="cat" autocomplete="off" placeholder="Ingrese Categoria" required>
-                        <select name="available" id="available">
+                        Descripción: <input type="text" id="desc" autocomplete="off" placeholder="Ingrese Descripcion" required>
+                        {{!-- <input type="text" id="img" autocomplete="off" placeholder="Ingrese Imagen" required> --}}
+                        Precio: <input type="number" id="price" autocomplete="off" placeholder="Ingrese Precio" required>
+                        Propietario: <input type="text" id="owner" autocomplete="off" placeholder="Ingrese Owner(Email)" required>
+                    </div>
+                    <div>
+                        Stock: <input type="number" id="stock" autocomplete="off" placeholder="Ingrese Stock" required>
+                        Categoría: <input type="text" id="cat" autocomplete="off" placeholder="Ingrese Categoria" required>
+                        Disponibilidad: <select name="available" id="available">
                             <option value="available_stock" selected="true">Con Stock</option>
                             <option value="no_stock_available">Sin Stock</option>
                         </select>
                     </div>
                 </div>
+                <div class="botones">
+                    <button type="submit" id="btnOperacion">Realizar operación</button>
+                </div>
             
-            <div class="botones">
-                <button type="submit" id="btnOperacion">Realizar operación</button>
-            </div>
         </form>
         </div>
         
@@ -66,7 +76,7 @@
                     data-stock="{{this.stock}}" data-category="{{this.category}}" data-available="{{this.availability}}"
                     data-owner="{{this.owner}}" data-id="{{this._id}}">
                         Nombre: {{this.name}}<br>
-                        <strong>{{this.description}}</strong><br>
+                        Descripción: <strong>{{this.description}}</strong><br>
                         Price: ${{this.price}}<br>
                         Stock: {{this.stock}}<br>
                         Category: {{this.category}}<br>
@@ -116,7 +126,7 @@
             const clickedElement = event.target;
             if (clickedElement.tagName === "LI") {
                 // Información productos existentes
-                const price = clickedElement.getAttribute("data-name");
+                const name = clickedElement.getAttribute("data-name");
                 const description = clickedElement.getAttribute("data-description");
                 //const image = clickedElement.getAttribute("data-image");
                 const price = clickedElement.getAttribute("data-price");

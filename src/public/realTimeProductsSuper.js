@@ -7,10 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.removeItem("token");
         window.location.href = '/';
     }
-
+    
     // Obtener referencia al formulario y al campo de ID
     const productSelect = document.getElementById("productSelect");
-    const fillFormBtn = document.getElementById("fillFormBtn");
+    
 
     //referencia atributos prod
     const prodForm = document.getElementById("prod-form");
@@ -20,13 +20,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const priceInput = document.getElementById("price");
     const stockInput = document.getElementById("stock");
     const catInput = document.getElementById("cat");
+    const operationSelect = document.getElementById("operationSelect");
     const ownInput = document.getElementById("owner");
 
     // Ocultar el campo de ID, seleccion, llenar formulario por defecto
     idInput.style.display = "none";
-    fillFormBtn.style.display = "none";
+    
     productSelect.style.display = "none";
 
+    operationSelect.addEventListener("change", function(){
+        //limpiar inputs
+        nameInput.value = ''
+        descInput.value = ''
+        priceInput.value = ''
+        stockInput.value = ''
+        catInput.value = ''
+        ownInput.value = ''
+    })
     // Manejar cambios en las opciones de operación
     prodForm.addEventListener("change", function (event) {
         const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
@@ -34,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Mostrar u ocultar el campo de ID según la operación seleccionada
         idInput.style.display = (selectedOperation === "edit") ? "block" : "none";
         productSelect.style.display = (selectedOperation === "edit") ? "block" : "none";
-        fillFormBtn.style.display = (selectedOperation === "edit") ? "block" : "none";
+        
         nameInput.style.display = (selectedOperation === "edit") ? "none" : "block";
 
         // Limpiar el valor del campo de ID si se selecciona "Agregar producto"
@@ -44,13 +54,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Habilitar o deshabilitar el select y el botón según la operación seleccionada
         productSelect.disabled = (selectedOperation === "edit") ? false : true;
-        fillFormBtn.disabled = (selectedOperation === "edit") ? false : true;
+        
     });
 
     // Manejar clic en el botón "Llenar Formulario"
-    fillFormBtn.addEventListener("click", function () {
+    
+    productSelect.addEventListener("change", function () {
         const selectedProductId = productSelect.value;
 
+        //su se vuelve a "Selecciona un producto", no se indefina
+        if (selectedProductId=="-") {
+            nameInput.value = "";
+            descInput.value = "";
+            priceInput.value = "";
+            stockInput.value = "";
+            catInput.value = "";
+            ownInput.value = "";
+            idInput.value = "";
+            return
+        }
+        
         // llamar a encontrar el producto seleccionado en la lista de productos
         socket.emit("dataProd", selectedProductId);
         socket.on("foundProd", (productData) => {
@@ -75,9 +98,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Manejar envío del formulario
     prodForm.addEventListener("submit", function (e) {
         e.preventDefault();
-
+    
         const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
-
+        console.log(selectedOperation)
         // Obtener valores del formulario según la operación seleccionada
         const id = (selectedOperation === "edit") ? idInput.value : '';
         const newProduct = {
@@ -89,11 +112,29 @@ document.addEventListener("DOMContentLoaded", function () {
             category: catInput.value,
             availability: document.getElementById("available").value
         };
-
+    
         // Emitir evento al servidor para realizar la operación correspondiente
         if (selectedOperation === "add") {
-            console.log("Se emite newProd como admin")
-            socket.emit("newProd", newProduct);
+            
+            fetch('/api/products/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newProduct)
+                })
+                .then(response => response.json())
+                .then(data => {
+                  // Manejar los datos de respuesta
+
+                  socket.emit("addedProduct")
+                
+                })
+                .catch(error => {
+                  // Manejar errores
+                  console.error('Se produjo un error:', error);
+                });             
+        
         } else {
             Swal.fire({
                 title: "¿Estás segur@ de editar el producto?",
@@ -104,15 +145,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 cancelButtonColor: "#d33",
                 confirmButtonText: "Sí, deseo editar",
                 cancelButtonText: "Cancelar"
-              }).then((result) => {
+            }).then( async (result) => {
                 if (result.isConfirmed) {
-                    socket.emit("updProd", { id: id, newProduct });
+                    await fetch(`/api/products/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(newProduct),
+                      })
+                        .then(response => response.json())
+                        .then(data => {
+                          socket.emit("editedProduct")
+                          
+                        })
+                        .catch(error => {
+                          console.error('Error al actualizar el producto:', error);
+                        });
                 }
-              });
+            });
         }
-
+    
         // Limpiar el formulario después de la operación
-        prodForm.reset();
+        // prodForm.reset();
     });
 
     document.querySelectorAll(".eliminarBtn").forEach(function (btn) {
@@ -120,7 +175,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const productId = this.closest("li").getAttribute("data-id");
             const owner = this.closest("li").getAttribute("data-owner");
             const email = document.getElementById("correoLogin").value;
+            const productName = this.closest("li").getAttribute("data-name");
 
+            const deleteData = {
+                owner,
+                productName
+            }
             Swal.fire({
                 title: "¿Estás segur@ de eliminar el producto?",
                 text: "No podrás revertir la eliminación del producto",
@@ -132,7 +192,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 cancelButtonText: "Cancelar"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    socket.emit("delProdPremium", { id: productId, owner: owner, email: email });
+                    fetch(`/api/products/${productId}`, {
+                        method: 'DELETE',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(deleteData),
+                      })
+                        .then(response => response.json())
+                        .then(data => {
+                          socket.emit("deletedProduct")
+                          
+                        })
+                        .catch(error => {
+                          console.error('Error al eliminar el producto:', error);
+                        });
                 }
             });
         });
@@ -175,5 +249,4 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
-
 

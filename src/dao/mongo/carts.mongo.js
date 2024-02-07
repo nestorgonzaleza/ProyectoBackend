@@ -12,6 +12,8 @@ export default class Carts {
         return carts
     }
 
+
+
     getCart = async (id_cart) => {
         try {
             const cart = await cartsModel.findById(id_cart);
@@ -20,7 +22,7 @@ export default class Carts {
                 return { error: "No se encontró el ID para el carrito" };
             }
     
-            return { cart }
+            return cart 
 
         } catch (error) {
             logger.error("No se logró obtener el carrito:", error);
@@ -95,12 +97,37 @@ export default class Carts {
         }
     };
     
-    addCart = async (cart) => {
+    addCart = async (newCart) => {
 
-        let result = await cartsModel.create(cart)
+        // let result = await cartsModel.create(cart)
         logger.warn("Se añade un nuevo carrito...")
+        let result = await cartsModel.create(newCart)
         logger.info("Carrito creado con éxito!")
+
         // console.log("Carrito creado con éxito!")
         return result
+    }
+
+    addProduct = async (cartId, productId)=>{
+        try{
+        const carrito = await cartsModel.findOne({_id: cartId})
+        if(carrito){
+            const productoExistente = carrito.products.find(producto=> String(producto.productId) === String(productId))
+
+            if(productoExistente){
+                productoExistente.quantity += 1
+            }else{
+                carrito.products.push({productId, quantity: 1})
+            }
+            await carrito.save()
+            return carrito
+        }else{
+            console.error("No se encontró ID asociado al carrito")
+        }
+        } catch(error){
+            console.error('Error al agregar producto al carrito:', error);
+            throw error;
+
+        }
     }
 }

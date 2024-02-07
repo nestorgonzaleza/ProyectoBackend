@@ -3,18 +3,32 @@ import Users from "../dao/mongo/users.mongo.js"
 import UserDTO from "../dao/DTOs/users.dto.js";
 import { userService } from "../repositories/pivot.js";
 import { addFile } from "../utils.js";
+import { transporter } from "../utils.js";
+import { passportCall, authorization } from "../utils.js";
 const router = Router()
 
 const usersMongo = new Users()
 
-router.get("/", async (req, res) => {
-  try{
-    req.logger.info('Cargando usuarios...');
-    let result = await usersMongo.get()
-    res.status(200).send({ status: "success", payload: result })
-  } catch (error) {
-    res.status(500).send({status:"error", message:"Internal Error"})
-  }
+router.get("/",passportCall('jwt'), authorization('user'), async (req, res) => {
+  authorization('user')(req, res,async() => {
+    try{
+      const user = req.user
+      req.logger.info('Cargando usuarios...');
+      let result = await userService.getUsers()
+      const members = result.map(user=>({
+        first_name: user.first_name,
+        email: user.email,
+        role: user.role
+      }));
+      // console.log(users)
+      // res.status(200).send({ status: "success", payload: result })
+      res.render('admin.users.handlebars', { user, members });
+      // res.json({ users })
+    
+    } catch (error) {
+      res.status(500).send({status:"error", message:"Internal Error"})
+    }
+  });
 })
 
 router.post("/", async (req, res) => {
@@ -74,6 +88,55 @@ router.post("/premium/:uid", async (req, res) => {
     }
   });
 
+router.delete("/", async (req,res)=>{
+  const actualDate = new Date()
+  let usersToCheckDate = await userService.getUsers()
+
+  const inactiveUsers = usersToCheckDate.filter(user=>((actualDate - user.last_connection)/(1000*60*60*24))>2);
+  // const inactiveUsers = usersToCheckDate.filter(user=>((actualDate - user.last_connection)/(1000*60))>5);
+  inactiveUsers.map(async (inactive)=> {
+    await transporter.sendMail({
+    from:'Novosita <novositabisuteria@gmail.com>',
+    to: inactive.email,
+    subject:'Correo desde Novositabisutería',
+    html:`
+    <div>
+        <h1>Estimado usuario, informarmos a usted que su cuenta ${inactive.email} ha sido removida por inactividad superior a 2 días</h1>
+    </div>
+    `,
+
+  }),
+
+  await userService.deleteUser(inactive._id)
+  })
+  res.json(inactiveUsers)
+})
+
+router.delete("/5min", async (req,res)=>{
+  const actualDate = new Date()
+  let usersToCheckDate = await userService.getUsers()
+
+  // const inactiveUsers = usersToCheckDate.filter(user=>((actualDate - user.last_connection)/(1000*60*60*24))>2);
+  const inactiveUsers = usersToCheckDate.filter(user=>((actualDate - user.last_connection)/(1000*60))>2);
+  inactiveUsers.map(async (inactive)=> {
+    await transporter.sendMail({
+    from:'Novosita <novositabisuteria@gmail.com>',
+    to: inactive.email,
+    subject:'Correo desde Novositabisutería',
+    html:`
+    <div>
+        <h1>Estimado usuario, informarmos a usted que su cuenta ${inactive.email} ha sido removida por inactividad superior a 5 minutos</h1>
+    </div>
+    `,
+
+  }),
+  console.log("se ha eliminado el usuario " + inactive)
+  await userService.deleteUser(inactive._id)
+  })
+  res.json(inactiveUsers)
+})
+
+  
   const uFiles = []
   router.post("/:uid/documents", addFile.fields([
     { name: 'profiles', maxCount: 2 },    

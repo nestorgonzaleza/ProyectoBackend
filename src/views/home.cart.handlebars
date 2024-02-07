@@ -1,0 +1,38 @@
+<h1>Mi carrito</h1>
+Bienvenido! <span id="emailUsuario">{{usermail}}</span>
+<a href="/current">Volver al catálogo</a>
+<button id="logoutButton">Cerrar Sesión</button>
+<div class="container">
+    <div class="infoProd">
+        <h1>Lista de productos en el carrito</h1>
+        <div class="detalleProd">
+            <div id="productsContainer">
+                <ul>
+                    {{#each products}}
+                    <li>
+                        ID Producto: {{this._id}}<br>
+                        <strong>{{this.name}}</strong><br>
+                        Precio unitario: ${{this.price}}<br>
+                        Cantidad: {{this.quantity}}<br>
+                        Precio total: ${{this.totalPrice}}<br>
+                        <br>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <h2>Total: ${{totalSum}}</h2>
+    <button class="comprar" id="comprarBtn">Comprar</button>
+</div>    
+
+<script>  
+    document.getElementById('logoutButton').addEventListener('click', cerrarSesion);
+    function cerrarSesion() {
+        localStorage.removeItem("token");
+        const userEmail = "{{user.email}}"
+        window.location.href = '/logout?email=' + userEmail
+    }
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/userCart.js"></script>

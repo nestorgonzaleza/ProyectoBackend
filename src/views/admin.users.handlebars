@@ -1,63 +1,57 @@
-<h1>Perfil Premium</h1>
+<h1>Perfil Administrador - Gestión de usuarios</h1>
 <div class="container">
-    Bienvenido! <span id="emailUsuario">{{email}}</span>
-<button id="logoutButton">Cerrar Sesión</button>
+    Bienvenido! <span id="emailUsuario">{{user.email}}</span>
+    <a href="/admin">Volver a gestión de productos</a>
+    <button id="logoutButton">Cerrar Sesión</button>
 
-    <div class="formulario">
-        <h1>Formulario de gestión de Productos</h1>
+ <div class="formulario">
+        <h1>Formulario de gestión de Usuarios</h1>
 
         <div class="formulario">
 
-            <form id="prod-form">
-                <div id="operationSelect">
-                <input type="radio" name="operation" value="add" checked> Agregar producto
-                <input type="radio" name="operation" value="edit"> Editar producto
-                </div>
-                <div>
-                    <select id="productSelect" >
-                        <option value="-" selected>Selecciona un producto</option>
-                        {{#each products}}
-                            <option value="{{this._id}}">{{this.name}}</option>
-                        {{/each}}
-                    </select>
-                    
-                </div>
+            <form id="user-form">
                 
-                <input type="hidden" id="productId" name="productId" placeholder="ID del producto a editar">
-                <input type="hidden" id="correoLogin" name="correoLogin" value="{{email}}">
                 <div class="inputs">
                     <div>
-                        <input type="text" id="name" autocomplete="off" placeholder="Ingrese Nombre" required>
-                        {{!-- <div>
-                            <select id="productSelect" >
-                                <option value="" selected>Selecciona un producto</option>
-                                {{#each products}}
-                                    <option value="{{this._id}}">{{this.name}}</option>
+                        
+                        <div>
+                            <select id="userSelect" >
+                                <option value="" selected>Selecciona un usuario</option>
+                                {{#each members}}
+                                    <option value="{{this.email}}">{{this.email}}</option>
+                                    
                                 {{/each}}
                             </select>
                             
-                        </div> --}}
+                        </div>
                     </div>
+                    
+
                     <div>
-                        Descripción: <input type="text" id="desc" autocomplete="off" placeholder="Ingrese Descripcion" required>
-                        {{!-- <input type="text" id="img" autocomplete="off" placeholder="Ingrese Imagen" required> --}}
-                        Precio: <input type="number" id="price" autocomplete="off" placeholder="Ingrese Precio" required>
-                        Propietario: <input type="text" id="owner" autocomplete="off" placeholder="Ingrese Owner(Email)" required>
+                        Rol actual: <div id="actualRole" style="border: 1px solid #ccc; padding: 5px; width: 200px;" placeholder="Stock actual..."></div>
                     </div>
+
                     <div>
+                        Rol nuevo: <select name="newRole" id="newRole">
+                            <option value="usuario" selected="true">Usuario</option>
+                            <option value="premium">Usuario Premium</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    {{!-- <div>
                         Stock: <input type="number" id="stock" autocomplete="off" placeholder="Ingrese Stock" required>
                         Categoría: <input type="text" id="cat" autocomplete="off" placeholder="Ingrese Categoria" required>
                         Disponibilidad: <select name="available" id="available">
                             <option value="available_stock" selected="true">Con Stock</option>
                             <option value="no_stock_available">Sin Stock</option>
                         </select>
-                    </div>
-                </div>
-                <div class="botones">
-                    <button type="submit" id="btnOperacion">Realizar operación</button>
+                    </div> --}}
                 </div>
             
-        </form>
+            <div class="botones">
+                <button type="submit" id="btnOperacion">Editar Rol</button>
+            </div>
+            </form>
         </div>
         
         
@@ -65,24 +59,18 @@
 
 
     <div class="infoProd">
-        <h1>Listado de productos</h1>
-        
+        <h1>Listado de Usuarios</h1>
+        <button id="deleteInactiveUsers2Days">Eliminar usuarios inactivos hace 2 días</button>
+        <button id="deleteInactiveUsers5Min">Eliminar usuarios inactivos hace 5 minutos</button>
         <div class="detalleProd">
             <div id="productsContainer">
                 <ul>
-                    {{#each products}}
-                    <li data-name="{{this.name}}"data-description="{{this.description}}" {{!-- data-image="{{this.image}}" --}} data-price="{{this.price}}" 
-                    data-stock="{{this.stock}}" data-category="{{this.category}}" data-available="{{this.availability}}"
-                    data-owner="{{this.owner}}" data-id="{{this._id}}">
-                        Nombre: {{this.name}}<br>
-                        Descripción: <strong>{{this.description}}</strong><br>
-                        Price: ${{this.price}}<br>
-                        Stock: {{this.stock}}<br>
-                        Category: {{this.category}}<br>
-                        Available: {{this.availability}}<br>
-                        Owner:{{this.owner}}<br>
-                        ID:{{this._id}}<br>
-                        <button class="eliminarBtn">Eliminar</button> 
+                    {{#each members}}
+                    <li data-first_name="{{this.first_name}}"data-email="{{this.email}}" data-role="{{this.role}}">
+                        Nombre: {{this.first_name}}<br>
+                        E-mail: <strong>{{this.email}}</strong><br>
+                        Rol: {{this.role}}<br>
+                        <button class="eliminarUsuario">Eliminar</button> 
                     </li>
                     {{/each}}
                 </ul>
@@ -115,8 +103,7 @@
         const catInput = document.getElementById("cat");
         //const ownInput = document.getElementById("owner");
         const idInput = document.getElementById("productId");
-        //const fillFormBtnInput = document.getElementById("fillFormBtn");
-        //const productSelectInput = document.getElementById("productSelect");
+
 
         
         // Evento para la productos
@@ -154,5 +141,4 @@
 </script>
 
 <script src="/socket.io/socket.io.js"></script>
-<script src="/realTimeProductsSuper.js"></script>
-
+<script src="/realTimeUsers.js"></script>   

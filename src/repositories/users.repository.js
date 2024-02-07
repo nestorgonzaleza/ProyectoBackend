@@ -16,6 +16,11 @@ export default class UserRepository {
         return result
     }
 
+    deleteUser = async (id) => {
+        let userToDelete = await this.dao.deleteUserById(id)
+        return userToDelete
+    }
+    
     getRoleUser = async (email) => {
         let result = await this.dao.getUserRoleByEmail(email)
         return result
