@@ -2,10 +2,14 @@ import mongoose from "mongoose";
 import config from '../config/config.js'
 
 //Variables afectadas por el switch según MONGO o Memory
-export let Carts
-export let Products
-export let Users
-export let Tickets
+// export let Carts
+// export let Products
+// export let Users
+// export let Tickets
+let Carts
+let Products
+let Users
+let Tickets
 
 //configuración persistencia MONGO/MEMO
 switch (config.persistence) {
@@ -16,7 +20,7 @@ switch (config.persistence) {
             const { default: ProductsMongo } = await import('./mongo/products.mongo.js')
             const { default: TicketsMongo } = await import('./mongo/tickets.mongo.js')
             const { default: UsersMongo } = await import('./mongo/users.mongo.js')
-
+            
             Carts = CartsMongo
             Products = ProductsMongo
             Users = UsersMongo
@@ -43,3 +47,5 @@ switch (config.persistence) {
     default:
 
 }
+
+export { Carts, Products, Users, Tickets };
