@@ -5,9 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node ./src/app.js",
-    "dev": "node ./src/app.js",
-    "test": "mocha ./src/test/*.test.js"
+    "start": "node ./src/app.js"
   },
   "keywords": [],
   "author": "",
