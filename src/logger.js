@@ -42,6 +42,6 @@ const prodlogger = winston.createLogger({
     ]
 })
 
-const logger = (process.env.ENV === "production" ? prodlogger : devlogger)
+const logger = (process.env.winstonENV === "production" ? prodlogger : devlogger)
 // const logger = prodlogger
 export default logger;
