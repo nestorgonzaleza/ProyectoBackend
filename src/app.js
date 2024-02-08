@@ -31,7 +31,7 @@ import CustomError from './services/errors/CustomError.js'
 import EErrors from './services/errors/enums.js'
 import { generateUserErrorInfo } from './services/errors/info.js'
 //logger
-import loggerMiddleware from './middlewares/logger/loggerMiddleware.js'
+import loggerMiddleware from './loggerMiddleware.js'
 import usersModel from './dao/mongo/models/users.model.js'
 
 
