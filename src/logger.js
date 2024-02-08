@@ -1,3 +1,4 @@
+import config from "./config/config.js"
 import winston, { format } from "winston"
 
 const devlogger = winston.createLogger({
@@ -41,6 +42,6 @@ const prodlogger = winston.createLogger({
     ]
 })
 
-const logger = (process.env.winstonENV === "production" ? prodlogger : devlogger)
+const logger = (config.winstonENV === "production" ? prodlogger : devlogger)
 
 export default logger;
