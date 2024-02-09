@@ -36,7 +36,7 @@ import usersModel from './dao/mongo/models/users.model.js'
 
 
 const app = express()
-const port = 8080
+const port = process.env.PORT || 8080
 
 const users = new UserMongo()
 const products = new ProdMongo()
